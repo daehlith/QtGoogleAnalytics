@@ -6,7 +6,7 @@
 
 TEST(QtGA_Tests, tracking_id_test)
 {
-    const QString longTrackingID("UA-987654321-1234");
+    const QString longTrackingID("UA-9876543210-1234");
     const QString shortTrackingID("UA-4321-0");
     const QString invalidTrackingID("FOO-BAR-BAZ");
 

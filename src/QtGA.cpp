@@ -18,6 +18,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#include <QtCore/QRegExp>
 
 #include <QtGA/QtGA.h>
 
@@ -28,7 +29,15 @@ QtGA::QtGA(QObject *parent) : QObject(parent)
 
 void QtGA::setTrackingID(const QString& trackingID)
 {
-    m_trackingID = trackingID;
+    QRegExp validTrackingID("\\bUA-\\d{4,10}-\\d{1,4}\\b");
+    if ( validTrackingID.exactMatch(trackingID) )
+    {
+        m_trackingID = trackingID;
+    }
+    else
+    {
+        m_trackingID = QString("");
+    }
 }
 
 const QString& QtGA::trackingID() const
