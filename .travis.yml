@@ -8,16 +8,17 @@ before_install:
         - sudo apt-get install -qq qt5-qmake qtbase5-dev
         - sudo apt-get install libgtest-dev
 install:
-        - cd /tmp/
+        - cd .. 
         - mkdir .gtest-build
         - cd .gtest-build
         - cmake -DCMAKE_BUILD_TYPE=RELEASE /usr/src/gtest/
         - make
         - sudo mv libg* /usr/lib/
 script:
-        - mkdir build
-        - cd build
-        - cmake ..
+        - cd ..
+        - mkdir .qtgabuild
+        - cd .qtgabuild
+        - cmake ../QtGA
         - make
         - make check
 notifications:
