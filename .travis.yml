@@ -20,7 +20,7 @@ script:
         - cd .qtgabuild
         - cmake ../QtGA
         - make
-        - make check
+        - ./runTests
 notifications:
         recipients:
                 - doc@methedrine.org
