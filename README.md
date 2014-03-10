@@ -6,8 +6,8 @@ QtGA is C++ library for integrating Google Analytics in a Qt application.
 Dependencies
 ------------
 To build QtGA from source you will need
-[CMake](http://www.cmake.org/CMake) (>=2.8.12), and
-[Qt](http://www.qt-project.org) (>=5.1.1).
+[CMake](http://www.cmake.org) (>=2.8), and
+[Qt](http://www.qt-project.org) (>=5.1).
 
 Note that building *might* work with earlier versions of CMake and Qt, but I have not tested this.
 
