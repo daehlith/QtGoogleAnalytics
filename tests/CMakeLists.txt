@@ -11,3 +11,5 @@ add_definitions(${Qt5Core_DEFINITIONS})
 add_executable(runTests tests.cpp)
 target_link_libraries(runTests ${GTEST_BOTH_LIBRARIES} ${Qt5Core_LIBRARIES} QtGA)
 add_test(NAME QtGATests COMMAND runTests)
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}
+                  DEPENDS runTests)

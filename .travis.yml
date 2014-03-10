@@ -19,7 +19,7 @@ script:
         - cd build
         - cmake ..
         - make
-        - ctest
+        - make check
 notifications:
         recipients:
                 - doc@methedrine.org
