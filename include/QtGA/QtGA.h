@@ -1,0 +1,55 @@
+/*
+ * Copyright (c) 2014 Thomas Daehling <doc@methedrine.org>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+#ifndef QTGA_H
+#define QTGA_H
+
+#include <QObject>
+#include <QString>
+
+#ifdef Q_OS_WIN
+    #ifdef BUILD_SHARED
+        #ifdef QT_GA_BUILD
+            #define QT_GA_EXPORTS Q_DECL_EXPORT
+        #else
+            #define QT_GA_EXPORTS Q_DECL_IMPORT
+        #endif
+    #else
+        #define QT_GA_EXPORTS
+    #endif
+#else
+    #define QT_GA_EXPORTS
+#endif
+
+class QT_GA_EXPORTS QtGA : public QObject
+{
+    Q_OBJECT
+public:
+    explicit QtGA(QObject* parent=nullptr);
+
+    void setTrackingID(const QString& trackingID);
+    const QString& trackingID() const;
+
+private:
+    QString m_trackingID;
+};
+
+#endif // QTGA_H
