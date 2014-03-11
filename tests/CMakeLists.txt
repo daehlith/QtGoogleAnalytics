@@ -11,6 +11,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
 
 add_executable(runTests tests.cpp)
 target_link_libraries(runTests ${GTEST_BOTH_LIBRARIES} ${Qt5Core_LIBRARIES} QtGA)
-add_test(NAME QtGATests COMMAND runTests)
+GTEST_ADD_TESTS(${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/runTests "" tests.cpp)
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}
                   DEPENDS runTests)
