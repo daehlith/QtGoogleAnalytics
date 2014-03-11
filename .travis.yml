@@ -17,9 +17,10 @@ addons:
 before_install:
         - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
         - sudo apt-get update -qq
+install:
         - sudo apt-get install -qq qt5-qmake qtbase5-dev
         - sudo apt-get install libgtest-dev
-install:
+before_script:
         - cd .. 
         - mkdir .gtest-build
         - cd .gtest-build
