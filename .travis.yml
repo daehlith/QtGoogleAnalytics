@@ -11,7 +11,7 @@ addons:
       description: "A library for integrating Google Analytics in a Qt application."
     notification_email: doc@methedrine.org
     build_command_prepend: cmake ../QtGA
-    build_command: make
+    build_command: make && cd ../QtGA
     branch_pattern: coverity_scan
 
 before_install:
