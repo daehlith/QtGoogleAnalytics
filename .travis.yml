@@ -1,6 +1,19 @@
 language: cpp
 compiler:
   - clang
+env:
+  global:
+   - secure: "BN+UKIVFWBTrd1UgN+cPSOVK+L0agSH/FLnMJ59H7YXThAPWBlMor4cWajyrKxJs0UMXqF5Dc2upMHMQraLm1OREVwrXgAwHrJUQKY8vwBY3MNFhl5Tb6dwMxUnBt/Wlu3sSvDZucfm1h9dhSPlu2p8MPWZDZF2HpGT8dgdUkn0="
+addons:
+  coverity_scan:
+    project:
+      name: "daehlith/QtGA"
+      description: "A library for integrating Google Analytics in a Qt application."
+    notification_email: doc@methedrine.org
+    build_command_prepend: cmake ../QtGA
+    build_command: make
+    branch_pattern: coverity_scan
+
 before_install:
         - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
         - sudo apt-get update -qq
@@ -13,13 +26,13 @@ install:
         - cmake -DCMAKE_BUILD_TYPE=RELEASE /usr/src/gtest/
         - make
         - sudo mv libg* /usr/lib/
-script:
         - cd ..
         - mkdir .qtgabuild
         - cd .qtgabuild
-        - cmake ../QtGA
-        - make
-        - make check
+script: 
+        - if  [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cmake ../QtGA && make ; fi
+after_success:
+        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make check ; fi
 notifications:
         recipients:
                 - doc@methedrine.org
