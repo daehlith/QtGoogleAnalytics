@@ -106,7 +106,7 @@ QString QtGAConfiguration::userAgent() const
 
 void QtGAConfiguration::setClientID(const QUuid &clientID)
 {
-    if ( ! m_clientID.isNull() && clientID.version() == QUuid::Random )
+    if ( ( !clientID.isNull() ) && ( clientID.version() == QUuid::Random ) )
     {
         m_clientID = clientID;
     }

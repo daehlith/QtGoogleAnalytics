@@ -49,11 +49,11 @@ TEST(QtGAConfiguration_Tests, client_id_tests)
     // The value of this field should be a random UUID (version 4) as described in http://www.ietf.org/rfc/rfc4122.txt
     QtGAConfiguration configuration;
     EXPECT_TRUE(configuration.clientID().isNull());
-//    const QUuid expected = QUuid("f47ac10b-58cc-4372-a567-0e02b2c3d479");
-//    configuration.setClientID(expected);
-//    EXPECT_EQ(expected, configuration.clientID());
-//    // An invalid clientID should not change the existing value
-//    const QUuid noVersion4Uuid = QUuid("f47ac10b-58cc-5372-b567-0e02b2c3d479");
-//    configuration.setClientID(noVersion4Uuid);
-//    EXPECT_EQ(expected, configuration.clientID());
+    const QUuid expected = QUuid("f47ac10b-58cc-4372-a567-0e02b2c3d479");
+    configuration.setClientID(expected);
+    EXPECT_EQ(expected, configuration.clientID());
+    // An invalid clientID should not change the existing value
+    const QUuid noVersion4Uuid = QUuid("f47ac10b-58cc-5372-b567-0e02b2c3d479");
+    configuration.setClientID(noVersion4Uuid);
+    EXPECT_EQ(expected, configuration.clientID());
 }
