@@ -1,6 +1,7 @@
 language: cpp
 compiler:
   - clang
+  - gcc
 env:
   global:
    - secure: "BN+UKIVFWBTrd1UgN+cPSOVK+L0agSH/FLnMJ59H7YXThAPWBlMor4cWajyrKxJs0UMXqF5Dc2upMHMQraLm1OREVwrXgAwHrJUQKY8vwBY3MNFhl5Tb6dwMxUnBt/Wlu3sSvDZucfm1h9dhSPlu2p8MPWZDZF2HpGT8dgdUkn0="
@@ -21,19 +22,17 @@ install:
         - sudo apt-get install -qq qt5-qmake qtbase5-dev
         - sudo apt-get install libgtest-dev
 before_script:
-        - cd .. 
         - mkdir .gtest-build
         - cd .gtest-build
         - cmake -DCMAKE_BUILD_TYPE=RELEASE /usr/src/gtest/
         - make
         - sudo mv libg* /usr/lib/
-        - cd ${TRAVIS_BUILD_DIR}
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then mkdir .qtgabuild ; fi
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cd .qtgabuild ; fi
+        - cd ..
 script: 
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cmake .. && make ; fi
+        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cmake . && make ; fi
 after_success:
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make check ; fi
+        - ls -all
+        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then ./runTests ; fi
 notifications:
         recipients:
                 - doc@methedrine.org

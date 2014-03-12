@@ -10,5 +10,5 @@ add_definitions(${Qt5Network_DEFINITIONS})
 
 qt5_wrap_cpp(QtGA_SRC ${QtGA_HEADERS})
 
-add_library(QtGA SHARED QtGA.cpp ${QtGA_SRC})
+add_library(QtGA SHARED QtGA.cpp QtGAConfiguration.cpp ${QtGA_SRC})
 target_link_libraries(QtGA ${Qt5Core_LIBRARIES} ${Qt5Network_LIBRARIES})
