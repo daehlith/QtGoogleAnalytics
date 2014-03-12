@@ -23,33 +23,49 @@
 #define QTGA_H
 
 #include "QtGA_global.h"
-#include "QtGAConfiguration.h"
 
+#include <QFlags>
+#include <QMap>
 #include <QObject>
+#include <QVariant>
+
+#include "QtGAConfiguration.h"
 
 class QNetworkAccessManager;
 
-class QT_GA_EXPORTS QtGA : public QObject
+// Need to support the supported datatypes somehow:
+// Text = QString
+// Currency = QtGACurrency? QString with a validator?
+// Boolean = bool
+// Integer = qint64
+class QT_GA_EXPORTS QtGAValue
 {
-    Q_OBJECT
-
-    Q_ENUMS(HitTypes)
-    Q_ENUMS(HitParameter)
-    Q_ENUMS(ParameterType)
-    Q_ENUMS(AnalyticsError)
-
 public:
+    enum Type
+    {
+        Text = 0,
+        Currency,
+        Boolean,
+        Integer
+    };
 
-    // Need to support the supported datatypes somehow:
-    // Text = QString
-    // Currency = QtGACurrency? QString with a validator?
-    // Boolean = bool
-    // Integer = qint64
+    QtGAValue() {}
+    QtGAValue(const QString& value) : m_value(value) {}
+    QtGAValue(bool value) : m_value(value) {}
 
-    // Need some LUTs for parameter validation:
-    // HitParameter | Textual Representation | ValueType | Default Value | Max Length | Supported HitTypes
+    QString toString() const
+    {
+        return m_value.toString();
+    }
 
-    enum HitTypes
+private:
+    QVariant m_value;
+};
+
+class QT_GA_EXPORTS QtGAHit
+{
+public:
+    enum Type
     {
         PageView = 1<<0,
         AppView = 1<<1,
@@ -59,9 +75,11 @@ public:
         Social = 1<<5,
         Exception = 1<<6,
         Timing = 1<<7,
+        AllTypes = PageView | AppView | Event | Transaction | Item | Social | Exception | Timing,
     };
+    Q_DECLARE_FLAGS(Types, Type)
 
-    enum HitParameter
+    enum Parameter
     {
         // General
         ProtocolVersion = 0,
@@ -148,14 +166,32 @@ public:
         ExperimentVariant,
     };
 
-    enum ParameterType
-    {
-        Text = 0,
-        Currency,
-        Boolean,
-        Integer
-    };
+    typedef QMap<QtGAHit::Parameter, QtGAValue> ParameterMap;
 
+    QtGAHit(const QtGAConfiguration& config);
+
+    void addParameter(Parameter parameter , const QtGAValue& value);
+    ParameterMap parameters() const;
+
+    void setExperiment(const QString& id, const QString& variant);
+    QString experimentID() const;
+    QString experimentVariant() const;
+
+    void setConfiguration(const QtGAConfiguration& config);
+    QtGAConfiguration configuration() const;
+
+private:
+    QtGAConfiguration m_config;
+    ParameterMap m_parameters;
+};
+
+class QT_GA_EXPORTS QtGA : public QObject
+{
+    Q_OBJECT
+
+    Q_ENUMS(AnalyticsError)
+
+public:
     enum AnalyticsError
     {
         NoError = 0,
@@ -166,18 +202,11 @@ public:
 
     explicit QtGA(QObject* parent=nullptr);
 
-    QtGA(const QtGAConfiguration& config, QObject *parent=nullptr);
-
-    void setConfiguration(const QtGAConfiguration& config);
-    QtGAConfiguration configuration();
-
     void setNetworkAccessManager(QNetworkAccessManager* manager);
     const QNetworkAccessManager* networkAccessManager() const;
 
     void startSession();
     void endSession();
-
-    AnalyticsError track(HitTypes type, const QVariantMap& parameters, bool interactive = false);
 
 private:
 
@@ -188,10 +217,11 @@ private:
         EndSession,
     };
 
-    QtGAConfiguration m_config;
     QNetworkAccessManager* m_nam;
     Session m_session;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QtGAHit::Types)
 
 Q_DECLARE_METATYPE(QtGA::AnalyticsError)
 
