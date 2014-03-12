@@ -66,3 +66,12 @@ TEST(QtGAConfiguration_Tests, cache_busting_tests)
     EXPECT_TRUE(configuration.cacheBusting());
     // TODO check for "z" being appended to the final URL
 }
+
+TEST(QtGAConfiguration_Tests, IP_anonymization_tests)
+{
+    QtGAConfiguration configuration;
+    EXPECT_FALSE(configuration.anonymizeIP());
+    configuration.setIPAnonymization(true);
+    EXPECT_TRUE(configuration.anonymizeIP());
+    // TODO check for "aip" being appened to the final URL
+}

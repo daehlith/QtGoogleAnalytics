@@ -7,8 +7,8 @@ const QUrl QtGAConfiguration::NORMAL_ENDPOINT = QUrl("https//www.google-analytic
 const QString QtGAConfiguration::USERAGENT = QString("QtGA/1.0");
 
 QtGAConfiguration::QtGAConfiguration()
-    : m_trackingID(""), m_endpoint(QtGAConfiguration::NORMAL_ENDPOINT), m_requestType(QtGAConfiguration::DefaultRequest),
-      m_userAgent(QtGAConfiguration::USERAGENT), m_cacheBusting(false)
+    : m_endpoint(QtGAConfiguration::NORMAL_ENDPOINT), m_requestType(QtGAConfiguration::DefaultRequest),
+      m_userAgent(QtGAConfiguration::USERAGENT), m_cacheBusting(false), m_anonymizeIP(false)
 {
 
 }
