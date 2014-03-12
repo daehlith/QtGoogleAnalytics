@@ -57,3 +57,12 @@ TEST(QtGAConfiguration_Tests, client_id_tests)
     configuration.setClientID(noVersion4Uuid);
     EXPECT_EQ(expected, configuration.clientID());
 }
+
+TEST(QtGAConfiguration_Tests, cache_busting_tests)
+{
+    QtGAConfiguration configuration;
+    EXPECT_FALSE(configuration.cacheBusting());
+    configuration.setCacheBusting(true);
+    EXPECT_TRUE(configuration.cacheBusting());
+    // TODO check for "z" being appended to the final URL
+}
