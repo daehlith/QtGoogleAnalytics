@@ -21,20 +21,17 @@ install:
         - sudo apt-get install -qq qt5-qmake qtbase5-dev
         - sudo apt-get install libgtest-dev
 before_script:
-        - cd .. 
         - mkdir .gtest-build
         - cd .gtest-build
         - cmake -DCMAKE_BUILD_TYPE=RELEASE /usr/src/gtest/
         - make
         - sudo mv libg* /usr/lib/
-        - if [ ${COVERITY_SCAN_BRANCH} == 1 ]; then cd ../QtGA ; fi
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cd .. ; fi
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then mkdir .qtgabuild ; fi
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cd .qtgabuild ; fi
+        - cd ..
 script: 
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cmake ../QtGA && make ; fi
+        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cmake . && make ; fi
 after_success:
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make check ; fi
+        - ls -all
+        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then ./runTests ; fi
 notifications:
         recipients:
                 - doc@methedrine.org
