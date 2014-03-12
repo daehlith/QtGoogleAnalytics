@@ -1,6 +1,7 @@
 language: cpp
 compiler:
   - clang
+  - gcc
 env:
   global:
    - secure: "BN+UKIVFWBTrd1UgN+cPSOVK+L0agSH/FLnMJ59H7YXThAPWBlMor4cWajyrKxJs0UMXqF5Dc2upMHMQraLm1OREVwrXgAwHrJUQKY8vwBY3MNFhl5Tb6dwMxUnBt/Wlu3sSvDZucfm1h9dhSPlu2p8MPWZDZF2HpGT8dgdUkn0="
@@ -10,7 +11,7 @@ addons:
       name: "daehlith/QtGA"
       description: "A library for integrating Google Analytics in a Qt application."
     notification_email: doc@methedrine.org
-    build_command_prepend: cmake
+    build_command_prepend: cmake .
     build_command: make
     branch_pattern: coverity_scan
 
