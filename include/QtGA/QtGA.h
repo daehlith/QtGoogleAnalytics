@@ -29,9 +29,6 @@
 
 class QNetworkAccessManager;
 
-/*!
- * \brief The QtGA class allows an application to send information to a Google Analytics backend.
- */
 class QT_GA_EXPORTS QtGA : public QObject
 {
     Q_OBJECT
@@ -149,7 +146,6 @@ public:
         // Content Experiments
         ExperimentID,
         ExperimentVariant,
-
     };
 
     enum ParameterType
@@ -168,58 +164,19 @@ public:
         ErrorPayloadTooLarge,
     };
 
-    /*!
-     * \brief QtGA Constructs a QtGA object that is the center of the Qt Google Analytics integration and sets parent as the parent object.
-     *
-     * \note If parent is an instance of QNetworkAccessManager then this instance will be used for communicating with the Google Analytics endpoint.
-     */
     explicit QtGA(QObject* parent=nullptr);
 
-    /*!
-     * \brief QtGA Constructs a QtGA object that is the center of the Qt Google Analytics integration
-     *
-     * The configuration specified via config will be used for configuring Google Analytics endpoint, and the parent object will be
-     * set to parent.
-     *
-     * \note If parent is an instance of QNetworkAccessManager then this instance will be used for communicating with the Google Analytics endpoint.
-     */
     QtGA(const QtGAConfiguration& config, QObject *parent=nullptr);
 
-    /*!
-     * \brief setConfiguration sets the configuration to use.
-     */
     void setConfiguration(const QtGAConfiguration& config);
-    /*!
-     * \brief configuration returns the QtGAConfiguration that will be used when communicating with the Google Analytics endpoint.
-     */
     QtGAConfiguration configuration();
 
-    /*!
-     * \brief setNetworkAccessManager specifies the QNetworkAccessManager to use.
-     * \note Since QtGA requires a valid QNetworkAccessManager instance this QtGA will be reparented to the specified instance.
-     */
     void setNetworkAccessManager(QNetworkAccessManager* manager);
-
-    /*!
-     * \brief networkAccessManager returns a pointer to the QNetworkAccessManager that is being used.
-     */
     const QNetworkAccessManager* networkAccessManager() const;
 
-    /*!
-     * \brief startSession indicates that the next tracking event is going to be the start of an analytics session.
-     */
     void startSession();
-
-    /*!
-     * \brief endSession indicates that the next tracking event is going to be the end of an analytics session.
-     */
     void endSession();
 
-    /*!
-     * \brief track Sends the provided event to the google analytics endpoint.
-     *
-     * \note The return value only indicates that an event was sent, not that it was successfully tracked on the Google Analytics backend.
-     */
     AnalyticsError track(HitTypes type, const QVariantMap& parameters, bool interactive = false);
 
 private:

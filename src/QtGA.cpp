@@ -24,6 +24,48 @@
 
 #include <QtGA/QtGA.h>
 
+/*!
+ * \brief The QtGA class allows an application to send information to a Google Analytics backend.
+ */
+/*!
+ * \brief QtGA Constructs a QtGA object that is the center of the Qt Google Analytics integration and sets parent as the parent object.
+ *
+ * \note If parent is an instance of QNetworkAccessManager then this instance will be used for communicating with the Google Analytics endpoint.
+ */
+/*!
+ * \brief QtGA Constructs a QtGA object that is the center of the Qt Google Analytics integration
+ *
+ * The configuration specified via config will be used for configuring Google Analytics endpoint, and the parent object will be
+ * set to parent.
+ *
+ * \note If parent is an instance of QNetworkAccessManager then this instance will be used for communicating with the Google Analytics endpoint.
+ */
+/*!
+ * \brief setConfiguration sets the configuration to use.
+ */
+/*!
+ * \brief configuration returns the QtGAConfiguration that will be used when communicating with the Google Analytics endpoint.
+ */
+/*!
+ * \brief setNetworkAccessManager specifies the QNetworkAccessManager to use.
+ * \note Since QtGA requires a valid QNetworkAccessManager instance this QtGA will be reparented to the specified instance.
+ */
+/*!
+ * \brief networkAccessManager returns a pointer to the QNetworkAccessManager that is being used.
+ */
+/*!
+ * \brief startSession indicates that the next tracking event is going to be the start of an analytics session.
+ */
+
+/*!
+ * \brief endSession indicates that the next tracking event is going to be the end of an analytics session.
+ */
+/*!
+ * \brief track Sends the provided event to the google analytics endpoint.
+ *
+ * \note The return value only indicates that an event was sent, not that it was successfully tracked on the Google Analytics backend.
+ */
+
 QtGA::QtGA(QObject *parent) : QtGA( QtGAConfiguration(), parent)
 {
 
