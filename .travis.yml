@@ -10,7 +10,7 @@ addons:
       name: "daehlith/QtGA"
       description: "A library for integrating Google Analytics in a Qt application."
     notification_email: doc@methedrine.org
-    build_command_prepend: cmake
+    build_command_prepend: cmake .
     build_command: make
     branch_pattern: coverity_scan
 
@@ -27,12 +27,11 @@ before_script:
         - cmake -DCMAKE_BUILD_TYPE=RELEASE /usr/src/gtest/
         - make
         - sudo mv libg* /usr/lib/
-        - if [ ${COVERITY_SCAN_BRANCH} == 1 ]; then cd ../QtGA ; fi
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cd .. ; fi
+        - cd ~/daehlith/QtGA/
         - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then mkdir .qtgabuild ; fi
         - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cd .qtgabuild ; fi
 script: 
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cmake ../QtGA && make ; fi
+        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cmake .. && make ; fi
 after_success:
         - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make check ; fi
 notifications:
