@@ -27,7 +27,7 @@ before_script:
         - cmake -DCMAKE_BUILD_TYPE=RELEASE /usr/src/gtest/
         - make
         - sudo mv libg* /usr/lib/
-        - cd ~/daehlith/QtGA/
+        - cd ${TRAVIS_BUILD_DIR}
         - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then mkdir .qtgabuild ; fi
         - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cd .qtgabuild ; fi
 script: 
