@@ -20,6 +20,8 @@
  */
 #include "QtGA/QtGA.h"
 
+#include <QtCore/QMapIterator>
+#include <QtCore/QUrlQuery>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
 
@@ -178,21 +180,39 @@ void QtGA::endSession()
     m_session = EndSession;
 }
 
-//QtGA::AnalyticsError QtGA::track(HitTypes type, const QVariantMap &parameters, bool interactive)
-//{
-//    if ( m_nam == nullptr )
-//    {
-//        return ErrorNoNetworkManager;
-//    }
+QtGA::AnalyticsError QtGA::track(const QtGAHit& hit)
+{
+    if ( m_nam == nullptr )
+    {
+        return ErrorNoNetworkManager;
+    }
 
-//    QNetworkRequest req(m_config.endpoint());
-//    req.setHeader(QNetworkRequest::UserAgentHeader, m_config.userAgent());
-//    QUrlQuery query;
-//    QByteArray data = query.toString(QUrl::FullyEncoded).toLatin1();
-//    m_nam->post( req, data );
+    const QtGAConfiguration& config = hit.configuration();
+    QNetworkRequest req(config.endpoint());
+    req.setHeader(QNetworkRequest::UserAgentHeader, config.userAgent());
 
-//    return NoError;
-//}
+    QUrlQuery query;
+    QtGAHit::ParameterMap params = hit.parameters();
+
+    QMapIterator<QtGAHit::Parameter, QtGAValue> iter(params);
+    while ( iter.hasNext() )
+    {
+        iter.next();
+        query.addQueryItem( s_parameterInfo[iter.key()].textualRepresentation, iter.value().toString() );
+    }
+
+    QByteArray data = query.toString(QUrl::FullyEncoded).toLatin1();
+
+    // FIXME magic number depicting the maximum allowed payload size
+    if (data.length() > 8192)
+    {
+        return ErrorPayloadTooLarge;
+    }
+
+    m_nam->post( req, data );
+
+    return NoError;
+}
 
 /*!
  * \brief setConfiguration sets the configuration to use.

@@ -208,6 +208,8 @@ public:
     void startSession();
     void endSession();
 
+    AnalyticsError track(const QtGAHit& hit);
+
 private:
 
     enum Session
