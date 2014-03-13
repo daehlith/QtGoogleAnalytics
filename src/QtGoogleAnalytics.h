@@ -18,44 +18,32 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <QCoreApplication>
-#include <QSignalSpy>
-#include <QTimer>
 
-#include <gtest/gtest.h>
+#ifndef QTGOOGLEANALYTICS_H
+#define QTGOOGLEANALYTICS_H
 
-#include "../src/QtGoogleAnalytics.h"
+#include "QtGoogleAnalytics_global.h"
 
-#include "testapplication.h"
-#include "testnetworkaccessmanager.h"
+#include <QObject>
 
-TEST(Tracker, setNetworkAccessManager)
+class QNetworkAccessManager;
+
+class QT_GA_EXPORTS QtGoogleAnalyticsTracker : public QObject
 {
-    // Tests that we can a network manager to use
-    TestNetworkAccessManager nam;
-    QtGoogleAnalyticsTracker tracker;
-    // 1. network access manager cannot be nulled
-    tracker.setNetworkAccessManager(nullptr);
-    EXPECT_NE(nullptr, tracker.networkAccessManager());
-    // 2. network access manager can be set to valid values
-    tracker.setNetworkAccessManager(&nam);
-    EXPECT_EQ(&nam, tracker.networkAccessManager());
-}
+    Q_OBJECT
+public:
+    explicit QtGoogleAnalyticsTracker(QObject* parent=nullptr);
 
-TEST(Tracker, track)
-{
-    // test that we can actually track stuff using QtGoogleAnalytics
-    TestNetworkAccessManager nam;
-    QtGoogleAnalyticsTracker tracker;
-    QSignalSpy spy(&tracker, SIGNAL(tracked()));
-    tracker.setNetworkAccessManager(&nam);
-    tracker.track();
-    EXPECT_EQ(1, spy.count());
-}
+    void setNetworkAccessManager(QNetworkAccessManager* nam);
+    QNetworkAccessManager* networkAccessManager() const;
 
-int main(int argc, char** argv)
-{
-    QCoreApplication app( argc, argv );
-    ::testing::InitGoogleTest( &argc, argv );
-    return RUN_ALL_TESTS();
-}
+    void track();
+
+signals:
+    void tracked();
+
+private:
+    QNetworkAccessManager* m_nam;
+};
+
+#endif // QTGOOGLEANALYTICS_H
