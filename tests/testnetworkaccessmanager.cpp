@@ -21,8 +21,8 @@
 
 #include "testnetworkaccessmanager.h"
 
-#include <QBuffer>
 #include <QByteArray>
+#include <QIODevice>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 
@@ -33,8 +33,10 @@ TestNetworkAccessManager::TestNetworkAccessManager(QObject *parent) :
 
 QNetworkReply* TestNetworkAccessManager::createRequest( QNetworkAccessManager::Operation op, const QNetworkRequest& request, QIODevice *outgoingData )
 {
-    // Url, headers or metadata do not match
-    m_failed = ( request != *m_expectedRequest );
+    QByteArray outgoing = outgoingData->readAll();
+
+    m_failed = ( request != *m_expectedRequest ); // Url, headers or metadata do not match
+    m_failed |= ( outgoing != m_expectedData ); // payload mismatch
 
     return QNetworkAccessManager::createRequest( op, request, outgoingData );
 }
@@ -42,6 +44,11 @@ QNetworkReply* TestNetworkAccessManager::createRequest( QNetworkAccessManager::O
 void TestNetworkAccessManager::setExpectedRequest( QNetworkRequest *request )
 {
     m_expectedRequest = request;
+}
+
+void TestNetworkAccessManager::setExpectedData( const QString& data )
+{
+    m_expectedData = data;
 }
 
 bool TestNetworkAccessManager::failed() const

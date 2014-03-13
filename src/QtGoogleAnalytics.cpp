@@ -25,6 +25,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegExp>
+#include <QUrlQuery>
 
 const QUrl QtGoogleAnalyticsTracker::NormalEndpoint( "http://www.google-analytics.com/collect" );
 const QUrl QtGoogleAnalyticsTracker::SecureEndpoint( "https://ssl.google-analytics.com/collect" );
@@ -65,11 +66,15 @@ QNetworkAccessManager* QtGoogleAnalyticsTracker::networkAccessManager() const
     return m_nam;
 }
 
-void QtGoogleAnalyticsTracker::track()
+void QtGoogleAnalyticsTracker::track( const QtGoogleAnalyticsTracker::ParameterList& parameters )
 {
     QByteArray data;
     QNetworkRequest req;
     QUrl url = NormalEndpoint;
+    QUrlQuery query;
+    query.setQueryItems( parameters );
+    query.addQueryItem( QString( "tid" ), m_trackingID );
+    data = query.toString( QUrl::FullyEncoded ).toLatin1();
     req.setUrl( url );
     m_nam->post( req, data );
 }

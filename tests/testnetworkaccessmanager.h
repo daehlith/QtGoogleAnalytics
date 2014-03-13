@@ -36,6 +36,7 @@ public:
     explicit TestNetworkAccessManager( QObject *parent = 0 );
 
     void setExpectedRequest( QNetworkRequest *request );
+    void setExpectedData( const QString& data );
 
     bool failed() const;
 
@@ -45,6 +46,7 @@ protected:
 private:
     QNetworkRequest* m_expectedRequest;
     bool m_failed;
+    QString m_expectedData;
 
 };
 

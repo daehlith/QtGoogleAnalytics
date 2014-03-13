@@ -24,7 +24,9 @@
 
 #include "QtGoogleAnalytics_global.h"
 
+#include <QList>
 #include <QObject>
+#include <QString>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -33,6 +35,7 @@ class QT_GA_EXPORTS QtGoogleAnalyticsTracker : public QObject
 {
     Q_OBJECT
 public:
+    typedef QList<QPair<QString, QString> > ParameterList;
     static const QUrl NormalEndpoint;
     static const QUrl SecureEndpoint;
 
@@ -41,7 +44,7 @@ public:
     void setNetworkAccessManager( QNetworkAccessManager* nam );
     QNetworkAccessManager* networkAccessManager() const;
 
-    void track();
+    void track( const QList<QPair<QString, QString> >& parameters );
 
     void setTrackingID( const QString& trackingID );
     QString trackingID() const;
