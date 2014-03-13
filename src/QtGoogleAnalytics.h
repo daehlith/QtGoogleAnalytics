@@ -27,14 +27,15 @@
 #include <QObject>
 
 class QNetworkAccessManager;
+class QNetworkReply;
 
 class QT_GA_EXPORTS QtGoogleAnalyticsTracker : public QObject
 {
     Q_OBJECT
 public:
-    explicit QtGoogleAnalyticsTracker(QObject* parent=nullptr);
+    explicit QtGoogleAnalyticsTracker( QObject* parent=nullptr );
 
-    void setNetworkAccessManager(QNetworkAccessManager* nam);
+    void setNetworkAccessManager( QNetworkAccessManager* nam );
     QNetworkAccessManager* networkAccessManager() const;
 
     void track();
@@ -42,7 +43,12 @@ public:
 signals:
     void tracked();
 
+private slots:
+    void onFinished(QNetworkReply* reply);
+
 private:
+    void connectSignals();
+
     QNetworkAccessManager* m_nam;
 };
 

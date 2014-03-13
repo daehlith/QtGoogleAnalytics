@@ -19,14 +19,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 #include <QCoreApplication>
+#include <QNetworkRequest>
 #include <QSignalSpy>
 #include <QTimer>
+#include <QUrl>
 
 #include <gtest/gtest.h>
 
 #include "../src/QtGoogleAnalytics.h"
 
-#include "testapplication.h"
 #include "testnetworkaccessmanager.h"
 
 TEST(Tracker, setNetworkAccessManager)
@@ -35,22 +36,30 @@ TEST(Tracker, setNetworkAccessManager)
     TestNetworkAccessManager nam;
     QtGoogleAnalyticsTracker tracker;
     // 1. network access manager cannot be nulled
-    tracker.setNetworkAccessManager(nullptr);
-    EXPECT_NE(nullptr, tracker.networkAccessManager());
+    tracker.setNetworkAccessManager( nullptr );
+    EXPECT_NE( nullptr, tracker.networkAccessManager() );
     // 2. network access manager can be set to valid values
-    tracker.setNetworkAccessManager(&nam);
-    EXPECT_EQ(&nam, tracker.networkAccessManager());
+    tracker.setNetworkAccessManager( &nam );
+    EXPECT_EQ( &nam, tracker.networkAccessManager() );
 }
 
 TEST(Tracker, track)
 {
     // test that we can actually track stuff using QtGoogleAnalytics
     TestNetworkAccessManager nam;
+    QNetworkRequest expectedRequest;
     QtGoogleAnalyticsTracker tracker;
-    QSignalSpy spy(&tracker, SIGNAL(tracked()));
-    tracker.setNetworkAccessManager(&nam);
+    QSignalSpy spy( &tracker, SIGNAL( tracked() ) );
+
+    nam.setExpectedRequest( &expectedRequest );
+
+    tracker.setNetworkAccessManager( &nam );
     tracker.track();
-    EXPECT_EQ(1, spy.count());
+
+    spy.wait();
+
+    EXPECT_EQ( 1, spy.count() );
+    EXPECT_FALSE( nam.failed() );
 }
 
 int main(int argc, char** argv)

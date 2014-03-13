@@ -20,14 +20,27 @@
  */
 #include "QtGoogleAnalytics.h"
 
+#include <QtGlobal>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 
 QtGoogleAnalyticsTracker::QtGoogleAnalyticsTracker( QObject *parent )
     : QObject( parent ), m_nam( new QNetworkAccessManager( this ) )
 {
-
+    connectSignals();
 }
 
+/*!
+ * \brief QtGoogleAnalyticsTracker::setNetworkAccessManager sets the QNetworkAccessManager that should be used by this tracker.
+ *
+ * Since a tracker requires a valid QNetworkAccessManager instance it will by default construct one of its own. However,
+ * for some applications this may not be desirable, and as such the network manager to use can overriden using this method.
+ *
+ * \note If a nullptr is passed to this function the previously set QNetworkAccessManager will still be used.
+ *
+ * \sa networkAccessManager()
+ */
 void QtGoogleAnalyticsTracker::setNetworkAccessManager( QNetworkAccessManager *nam )
 {
     if ( ! nam )
@@ -40,6 +53,7 @@ void QtGoogleAnalyticsTracker::setNetworkAccessManager( QNetworkAccessManager *n
         delete m_nam;
     }
     m_nam = nam;
+    connectSignals();
 }
 
 QNetworkAccessManager* QtGoogleAnalyticsTracker::networkAccessManager() const
@@ -49,5 +63,22 @@ QNetworkAccessManager* QtGoogleAnalyticsTracker::networkAccessManager() const
 
 void QtGoogleAnalyticsTracker::track()
 {
+    QByteArray data;
+    QNetworkRequest req;
+    m_nam->post( req, data );
+}
+
+void QtGoogleAnalyticsTracker::connectSignals()
+{
+    connect( m_nam, SIGNAL( finished( QNetworkReply* ) ), this, SLOT( onFinished( QNetworkReply* ) ) );
+}
+
+void QtGoogleAnalyticsTracker::onFinished( QNetworkReply *reply )
+{
+    if ( reply->error() != QNetworkReply::NoError )
+    {
+        qWarning( reply->errorString().toLocal8Bit() );
+    }
+    reply->deleteLater();
     emit tracked();
 }
