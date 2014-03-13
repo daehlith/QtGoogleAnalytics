@@ -33,12 +33,18 @@ class QT_GA_EXPORTS QtGoogleAnalyticsTracker : public QObject
 {
     Q_OBJECT
 public:
+    static const QUrl NormalEndpoint;
+    static const QUrl SecureEndpoint;
+
     explicit QtGoogleAnalyticsTracker( QObject* parent=nullptr );
 
     void setNetworkAccessManager( QNetworkAccessManager* nam );
     QNetworkAccessManager* networkAccessManager() const;
 
     void track();
+
+    void setTrackingID( const QString& trackingID );
+    QString trackingID() const;
 
 signals:
     void tracked();
@@ -50,6 +56,7 @@ private:
     void connectSignals();
 
     QNetworkAccessManager* m_nam;
+    QString m_trackingID;
 };
 
 #endif // QTGOOGLEANALYTICS_H

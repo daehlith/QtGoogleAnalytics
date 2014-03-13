@@ -21,6 +21,7 @@
 #include <QCoreApplication>
 #include <QNetworkRequest>
 #include <QSignalSpy>
+#include <QStringList>
 #include <QTimer>
 #include <QUrl>
 
@@ -43,6 +44,41 @@ TEST(Tracker, setNetworkAccessManager)
     EXPECT_EQ( &nam, tracker.networkAccessManager() );
 }
 
+TEST(Tracker, trackingID)
+{
+    QtGoogleAnalyticsTracker tracker;
+    QString empty;
+
+    // 1. Proper initialization
+    EXPECT_EQ( empty, tracker.trackingID() );
+
+    // 2. a bunch of invalid tracking IDs
+    tracker.setTrackingID( QString( "WT-1234-56" ) );
+    EXPECT_EQ( empty, tracker.trackingID() );
+    tracker.setTrackingID( QString( "-1234-56" ) );
+    EXPECT_EQ( empty, tracker.trackingID() );
+    tracker.setTrackingID( QString( "UA--12" ) );
+    EXPECT_EQ( empty, tracker.trackingID() );
+    tracker.setTrackingID( QString( "YT-1-" ) );
+    EXPECT_EQ( empty, tracker.trackingID() );
+    tracker.setTrackingID( QString( "-123-" ) );
+    EXPECT_EQ( empty, tracker.trackingID() );
+    tracker.setTrackingID( QString( "--1234" ) );
+
+    // 3. a bunch of valid tracking IDs
+    QStringList expectedTrackingIDs;
+    expectedTrackingIDs << "UA-1234-12" \
+                        << "YT-1234-12" \
+                        << "MO-1-1" \
+                        << "UA-1234-1" \
+                        << "ua-1-1";
+    Q_FOREACH( QString expected, expectedTrackingIDs )
+    {
+        tracker.setTrackingID( expected );
+        EXPECT_EQ( expected, tracker.trackingID() );
+    }
+}
+
 TEST(Tracker, track)
 {
     // test that we can actually track stuff using QtGoogleAnalytics
@@ -51,6 +87,7 @@ TEST(Tracker, track)
     QtGoogleAnalyticsTracker tracker;
     QSignalSpy spy( &tracker, SIGNAL( tracked() ) );
 
+    expectedRequest.setUrl( QtGoogleAnalyticsTracker::NormalEndpoint );
     nam.setExpectedRequest( &expectedRequest );
 
     tracker.setNetworkAccessManager( &nam );

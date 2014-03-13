@@ -24,6 +24,10 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QRegExp>
+
+const QUrl QtGoogleAnalyticsTracker::NormalEndpoint( "http://www.google-analytics.com/collect" );
+const QUrl QtGoogleAnalyticsTracker::SecureEndpoint( "https://ssl.google-analytics.com/collect" );
 
 QtGoogleAnalyticsTracker::QtGoogleAnalyticsTracker( QObject *parent )
     : QObject( parent ), m_nam( new QNetworkAccessManager( this ) )
@@ -65,6 +69,8 @@ void QtGoogleAnalyticsTracker::track()
 {
     QByteArray data;
     QNetworkRequest req;
+    QUrl url = NormalEndpoint;
+    req.setUrl( url );
     m_nam->post( req, data );
 }
 
@@ -81,4 +87,20 @@ void QtGoogleAnalyticsTracker::onFinished( QNetworkReply *reply )
     }
     reply->deleteLater();
     emit tracked();
+}
+
+void QtGoogleAnalyticsTracker::setTrackingID( const QString& trackingID )
+{
+    m_trackingID.clear();
+    QRegExp validTrackingID( "\\b(UA|YT|MO)-\\d+-\\d+\\b" );
+    validTrackingID.setCaseSensitivity( Qt::CaseInsensitive );
+    if ( validTrackingID.exactMatch( trackingID ) )
+    {
+        m_trackingID = trackingID;
+    }
+}
+
+QString QtGoogleAnalyticsTracker::trackingID() const
+{
+    return m_trackingID;
 }
