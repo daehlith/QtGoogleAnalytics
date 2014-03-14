@@ -91,8 +91,9 @@ TEST(Tracker, track)
     QString testTrackingID( "UA-0-0" );
     QSignalSpy spy( &tracker, SIGNAL( tracked() ) );
     QUrlQuery testQuery;
-    QBuffer testData;
 
+    expectedRequest.setHeader( QNetworkRequest::UserAgentHeader, QtGoogleAnalyticsTracker::UserAgent );
+    expectedRequest.setHeader( QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded" );
     expectedRequest.setUrl( QtGoogleAnalyticsTracker::NormalEndpoint );
 
     testParams << QPair<QString, QString>( "v", "1" );
@@ -111,6 +112,21 @@ TEST(Tracker, track)
 
     EXPECT_EQ( 1, spy.count() );
     EXPECT_FALSE( nam.failed() );
+}
+
+TEST(Tracker, userAgent)
+{
+    QtGoogleAnalyticsTracker tracker;
+    QString expectedUserAgent( "QtGoogleAnalyticsTrackerTests/1.0" );
+
+    // 1. Initialization to default value
+    EXPECT_EQ( QtGoogleAnalyticsTracker::UserAgent, tracker.userAgent() );
+    // 2. Illegal user-agent strings do not change the value
+    tracker.setUserAgent( "" );
+    EXPECT_EQ( QtGoogleAnalyticsTracker::UserAgent, tracker.userAgent() );
+    // 3. Valid user-agent strings are accepted
+    tracker.setUserAgent( expectedUserAgent );
+    EXPECT_EQ( expectedUserAgent, tracker.userAgent() );
 }
 
 int main(int argc, char** argv)

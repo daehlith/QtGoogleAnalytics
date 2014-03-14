@@ -29,9 +29,10 @@
 
 const QUrl QtGoogleAnalyticsTracker::NormalEndpoint( "http://www.google-analytics.com/collect" );
 const QUrl QtGoogleAnalyticsTracker::SecureEndpoint( "https://ssl.google-analytics.com/collect" );
+const QString QtGoogleAnalyticsTracker::UserAgent( "QtGoogleAnalyticsTracker/1.0" );
 
 QtGoogleAnalyticsTracker::QtGoogleAnalyticsTracker( QObject *parent )
-    : QObject( parent ), m_nam( new QNetworkAccessManager( this ) )
+    : QObject( parent ), m_nam( new QNetworkAccessManager( this ) ), m_userAgent( QtGoogleAnalyticsTracker::UserAgent )
 {
     connectSignals();
 }
@@ -76,6 +77,8 @@ void QtGoogleAnalyticsTracker::track( const QtGoogleAnalyticsTracker::ParameterL
     query.addQueryItem( QString( "tid" ), m_trackingID );
     data = query.toString( QUrl::FullyEncoded ).toLatin1();
     req.setUrl( url );
+    req.setHeader( QNetworkRequest::UserAgentHeader, m_userAgent );
+    req.setHeader( QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded" );
     m_nam->post( req, data );
 }
 
@@ -108,4 +111,17 @@ void QtGoogleAnalyticsTracker::setTrackingID( const QString& trackingID )
 QString QtGoogleAnalyticsTracker::trackingID() const
 {
     return m_trackingID;
+}
+
+void QtGoogleAnalyticsTracker::setUserAgent( const QString& userAgent )
+{
+    if ( ! userAgent.isEmpty() )
+    {
+        m_userAgent = userAgent;
+    }
+}
+
+QString QtGoogleAnalyticsTracker::userAgent() const
+{
+    return m_userAgent;
 }

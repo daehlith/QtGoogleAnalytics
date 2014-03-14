@@ -38,6 +38,7 @@ public:
     typedef QList<QPair<QString, QString> > ParameterList;
     static const QUrl NormalEndpoint;
     static const QUrl SecureEndpoint;
+    static const QString UserAgent;
 
     explicit QtGoogleAnalyticsTracker( QObject* parent=nullptr );
 
@@ -48,6 +49,9 @@ public:
 
     void setTrackingID( const QString& trackingID );
     QString trackingID() const;
+
+    void setUserAgent( const QString& userAgent );
+    QString userAgent() const;
 
 signals:
     void tracked();
@@ -60,6 +64,7 @@ private:
 
     QNetworkAccessManager* m_nam;
     QString m_trackingID;
+    QString m_userAgent;
 };
 
 #endif // QTGOOGLEANALYTICS_H
