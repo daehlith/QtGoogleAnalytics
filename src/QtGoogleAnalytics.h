@@ -27,6 +27,7 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+#include <QUrl>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -53,6 +54,9 @@ public:
     void setUserAgent( const QString& userAgent );
     QString userAgent() const;
 
+    void setEndpoint( const QUrl& endpoint );
+    QUrl endpoint() const;
+
 signals:
     void tracked();
 
@@ -65,6 +69,7 @@ private:
     QNetworkAccessManager* m_nam;
     QString m_trackingID;
     QString m_userAgent;
+    QUrl m_endpoint;
 };
 
 #endif // QTGOOGLEANALYTICS_H

@@ -12,5 +12,11 @@ add_definitions(${Qt5Network_DEFINITIONS})
 
 qt5_wrap_cpp(QtGoogleAnalytics_SRC ${QtGoogleAnalytics_HEADERS})
 
-add_library(QtGoogleAnalytics SHARED QtGoogleAnalytics.cpp ${QtGoogleAnalytics_SRC})
+set(LIBRARY_TYPE STATIC)
+if(BUILD_SHARED_LIBS)
+    add_definitions(-DBUILD_SHARED)
+    set(LIBRARY_TYPE SHARED)
+endif()
+
+add_library(QtGoogleAnalytics ${LIBRARY_TYPE} QtGoogleAnalytics.cpp ${QtGoogleAnalytics_SRC})
 target_link_libraries(QtGoogleAnalytics ${Qt5Core_LIBRARIES} ${Qt5Network_LIBRARIES})

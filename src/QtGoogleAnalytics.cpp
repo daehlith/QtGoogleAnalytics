@@ -32,7 +32,8 @@ const QUrl QtGoogleAnalyticsTracker::SecureEndpoint( "https://ssl.google-analyti
 const QString QtGoogleAnalyticsTracker::UserAgent( "QtGoogleAnalyticsTracker/1.0" );
 
 QtGoogleAnalyticsTracker::QtGoogleAnalyticsTracker( QObject *parent )
-    : QObject( parent ), m_nam( new QNetworkAccessManager( this ) ), m_userAgent( QtGoogleAnalyticsTracker::UserAgent )
+    : QObject( parent ), m_nam( new QNetworkAccessManager( this ) ), m_userAgent( QtGoogleAnalyticsTracker::UserAgent ),
+      m_endpoint( QtGoogleAnalyticsTracker::NormalEndpoint )
 {
     connectSignals();
 }
@@ -124,4 +125,17 @@ void QtGoogleAnalyticsTracker::setUserAgent( const QString& userAgent )
 QString QtGoogleAnalyticsTracker::userAgent() const
 {
     return m_userAgent;
+}
+
+void QtGoogleAnalyticsTracker::setEndpoint( const QUrl& endpoint )
+{
+    if ( endpoint.isValid() )
+    {
+        m_endpoint = endpoint;
+    }
+}
+
+QUrl QtGoogleAnalyticsTracker::endpoint() const
+{
+    return m_endpoint;
 }

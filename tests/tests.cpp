@@ -129,6 +129,20 @@ TEST(Tracker, userAgent)
     EXPECT_EQ( expectedUserAgent, tracker.userAgent() );
 }
 
+TEST(Tracker, endpoint)
+{
+    QtGoogleAnalyticsTracker tracker;
+
+    // 1. Initialization to default value
+    EXPECT_EQ( QtGoogleAnalyticsTracker::NormalEndpoint, tracker.endpoint() );
+    // 2. Invalid endpoint URL should not change the value
+    tracker.setEndpoint( QUrl("") );
+    EXPECT_EQ( QtGoogleAnalyticsTracker::NormalEndpoint, tracker.endpoint() );
+    // 3. Valid endpoint URL is accepted
+    tracker.setEndpoint( QtGoogleAnalyticsTracker::SecureEndpoint );
+    EXPECT_EQ( QtGoogleAnalyticsTracker::SecureEndpoint, tracker.endpoint() );
+}
+
 int main(int argc, char** argv)
 {
     QCoreApplication app( argc, argv );

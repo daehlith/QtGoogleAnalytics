@@ -10,4 +10,4 @@ set(QtGoogleAnalytics_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/QtGoogleAnalytics.h)
 
 add_subdirectory(src)
-add_subdirectory(tests)
+add_subdirectory(tests EXCLUDE_FROM_ALL)
