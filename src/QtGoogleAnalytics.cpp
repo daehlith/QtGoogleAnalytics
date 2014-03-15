@@ -30,10 +30,11 @@
 const QUrl QtGoogleAnalyticsTracker::NormalEndpoint( "http://www.google-analytics.com/collect" );
 const QUrl QtGoogleAnalyticsTracker::SecureEndpoint( "https://ssl.google-analytics.com/collect" );
 const QString QtGoogleAnalyticsTracker::UserAgent( "QtGoogleAnalyticsTracker/1.0" );
+const QString QtGoogleAnalyticsTracker::DefaultClientID( "QtGoogleAnalytics" );
 
 QtGoogleAnalyticsTracker::QtGoogleAnalyticsTracker( QObject *parent )
     : QObject( parent ), m_nam( new QNetworkAccessManager( this ) ), m_userAgent( QtGoogleAnalyticsTracker::UserAgent ),
-      m_endpoint( QtGoogleAnalyticsTracker::NormalEndpoint )
+      m_endpoint( QtGoogleAnalyticsTracker::NormalEndpoint ), m_clientID( QtGoogleAnalyticsTracker::DefaultClientID )
 {
     connectSignals();
 }
@@ -76,6 +77,7 @@ void QtGoogleAnalyticsTracker::track( const QtGoogleAnalyticsTracker::ParameterL
     QUrlQuery query;
     query.setQueryItems( parameters );
     query.addQueryItem( QString( "tid" ), m_trackingID );
+    query.addQueryItem( QString( "cid" ), m_clientID );
     data = query.toString( QUrl::FullyEncoded ).toLatin1();
     req.setUrl( url );
     req.setHeader( QNetworkRequest::UserAgentHeader, m_userAgent );
@@ -138,4 +140,18 @@ void QtGoogleAnalyticsTracker::setEndpoint( const QUrl& endpoint )
 QUrl QtGoogleAnalyticsTracker::endpoint() const
 {
     return m_endpoint;
+}
+
+void QtGoogleAnalyticsTracker::setClientID( const QString& clientID )
+{
+    // NOTE Google Analytics says that clientID SHOULD be a Uuidv4 but it accepts all texts
+    if ( ! clientID.isEmpty() )
+    {
+        m_clientID = clientID;
+    }
+}
+
+QString QtGoogleAnalyticsTracker::clientID() const
+{
+    return m_clientID;
 }

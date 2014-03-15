@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QUuid>
 
 #include <gtest/gtest.h>
 
@@ -100,6 +101,7 @@ TEST(Tracker, track)
 
     testQuery.setQueryItems( testParams );
     testQuery.addQueryItem( "tid", testTrackingID );
+    testQuery.addQueryItem( "cid", QtGoogleAnalyticsTracker::DefaultClientID );
 
     nam.setExpectedRequest( &expectedRequest );
     nam.setExpectedData( testQuery.toString( QUrl::FullyEncoded ) );
@@ -141,6 +143,21 @@ TEST(Tracker, endpoint)
     // 3. Valid endpoint URL is accepted
     tracker.setEndpoint( QtGoogleAnalyticsTracker::SecureEndpoint );
     EXPECT_EQ( QtGoogleAnalyticsTracker::SecureEndpoint, tracker.endpoint() );
+}
+
+TEST(Tracker, clientID)
+{
+    QtGoogleAnalyticsTracker tracker;
+    QString expectedClientID( "testID" );
+
+    // 1. Initialization
+    EXPECT_EQ( QtGoogleAnalyticsTracker::DefaultClientID, tracker.clientID() );
+    // 2. Valid clientIDs are accepted
+    tracker.setClientID( expectedClientID );
+    EXPECT_EQ( expectedClientID, tracker.clientID() );
+    // 3. Invalid should not change value
+    tracker.setClientID( "" );
+    EXPECT_EQ( expectedClientID, tracker.clientID() );
 }
 
 int main(int argc, char** argv)

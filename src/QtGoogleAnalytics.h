@@ -40,6 +40,7 @@ public:
     static const QUrl NormalEndpoint;
     static const QUrl SecureEndpoint;
     static const QString UserAgent;
+    static const QString DefaultClientID;
 
     explicit QtGoogleAnalyticsTracker( QObject* parent=nullptr );
 
@@ -57,6 +58,9 @@ public:
     void setEndpoint( const QUrl& endpoint );
     QUrl endpoint() const;
 
+    void setClientID( const QString& clientID );
+    QString clientID() const;
+
 signals:
     void tracked();
 
@@ -70,6 +74,7 @@ private:
     QString m_trackingID;
     QString m_userAgent;
     QUrl m_endpoint;
+    QString m_clientID;
 };
 
 #endif // QTGOOGLEANALYTICS_H
