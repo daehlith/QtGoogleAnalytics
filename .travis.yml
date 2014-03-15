@@ -32,9 +32,10 @@ before_script:
         - cd .qtgabuild
 script: 
         - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then cmake .. && make ; fi
+        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make tests ; fi
 after_success:
         - ls -all
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then ./runTests ; fi
+        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then ./tests ; fi
 notifications:
         recipients:
                 - doc@methedrine.org
