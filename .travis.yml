@@ -35,7 +35,7 @@ script:
         - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make tests ; fi
 after_success:
         - ls -all
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then ./tests ; fi
+        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then ./bin/tests ; fi
 notifications:
         recipients:
                 - doc@methedrine.org
