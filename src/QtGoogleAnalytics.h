@@ -41,6 +41,7 @@ public:
     static const QUrl SecureEndpoint;
     static const QString UserAgent;
     static const QString DefaultClientID;
+    static const QString ProtocolVersion;
 
     explicit QtGoogleAnalyticsTracker( QObject* parent=nullptr );
 
@@ -48,6 +49,7 @@ public:
     QNetworkAccessManager* networkAccessManager() const;
 
     void track( const QList<QPair<QString, QString> >& parameters );
+    void track( const QByteArray& data );
 
     void setTrackingID( const QString& trackingID );
     QString trackingID() const;

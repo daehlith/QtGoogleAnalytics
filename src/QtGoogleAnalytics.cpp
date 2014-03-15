@@ -31,6 +31,7 @@ const QUrl QtGoogleAnalyticsTracker::NormalEndpoint( "http://www.google-analytic
 const QUrl QtGoogleAnalyticsTracker::SecureEndpoint( "https://ssl.google-analytics.com/collect" );
 const QString QtGoogleAnalyticsTracker::UserAgent( "QtGoogleAnalyticsTracker/1.0" );
 const QString QtGoogleAnalyticsTracker::DefaultClientID( "QtGoogleAnalytics" );
+const QString QtGoogleAnalyticsTracker::ProtocolVersion( "1" );
 
 QtGoogleAnalyticsTracker::QtGoogleAnalyticsTracker( QObject *parent )
     : QObject( parent ), m_nam( new QNetworkAccessManager( this ) ), m_userAgent( QtGoogleAnalyticsTracker::UserAgent ),
@@ -71,15 +72,18 @@ QNetworkAccessManager* QtGoogleAnalyticsTracker::networkAccessManager() const
 
 void QtGoogleAnalyticsTracker::track( const QtGoogleAnalyticsTracker::ParameterList& parameters )
 {
-    QByteArray data;
-    QNetworkRequest req;
-    QUrl url = NormalEndpoint;
     QUrlQuery query;
     query.setQueryItems( parameters );
+    query.addQueryItem( QString( "v" ), ProtocolVersion );
     query.addQueryItem( QString( "tid" ), m_trackingID );
     query.addQueryItem( QString( "cid" ), m_clientID );
-    data = query.toString( QUrl::FullyEncoded ).toLatin1();
-    req.setUrl( url );
+    track( query.toString( QUrl::FullyEncoded ).toLatin1() );
+}
+
+void QtGoogleAnalyticsTracker::track( const QByteArray& data )
+{
+    QNetworkRequest req;
+    req.setUrl( m_endpoint );
     req.setHeader( QNetworkRequest::UserAgentHeader, m_userAgent );
     req.setHeader( QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded" );
     m_nam->post( req, data );

@@ -91,20 +91,18 @@ TEST(Tracker, track)
     QtGoogleAnalyticsTracker::ParameterList testParams;
     QString testTrackingID( "UA-0-0" );
     QSignalSpy spy( &tracker, SIGNAL( tracked() ) );
-    QUrlQuery testQuery;
+    QUrlQuery expectedData;
 
     expectedRequest.setHeader( QNetworkRequest::UserAgentHeader, QtGoogleAnalyticsTracker::UserAgent );
     expectedRequest.setHeader( QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded" );
     expectedRequest.setUrl( QtGoogleAnalyticsTracker::NormalEndpoint );
 
-    testParams << QPair<QString, QString>( "v", "1" );
-
-    testQuery.setQueryItems( testParams );
-    testQuery.addQueryItem( "tid", testTrackingID );
-    testQuery.addQueryItem( "cid", QtGoogleAnalyticsTracker::DefaultClientID );
+    expectedData.addQueryItem( "v", "1" );
+    expectedData.addQueryItem( "tid", testTrackingID );
+    expectedData.addQueryItem( "cid", QtGoogleAnalyticsTracker::DefaultClientID );
 
     nam.setExpectedRequest( &expectedRequest );
-    nam.setExpectedData( testQuery.toString( QUrl::FullyEncoded ) );
+    nam.setExpectedData( expectedData.toString( QUrl::FullyEncoded ) );
 
     tracker.setTrackingID( testTrackingID );
     tracker.setNetworkAccessManager( &nam );
