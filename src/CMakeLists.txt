@@ -14,11 +14,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Network_EXECUTABLE_COMPILE_FLAGS}")
 
 qt5_wrap_cpp(QtGoogleAnalytics_SRC ${QtGoogleAnalytics_HEADERS})
 
-set(LIBRARY_TYPE STATIC)
+set(BUILD_SHARED_LIBS off)
 if(BUILD_SHARED_LIBS)
     add_definitions(-DBUILD_SHARED)
-    set(LIBRARY_TYPE SHARED)
 endif()
 
-add_library(QtGoogleAnalytics ${LIBRARY_TYPE} QtGoogleAnalytics.cpp ${QtGoogleAnalytics_SRC})
+add_library(QtGoogleAnalytics QtGoogleAnalytics.cpp ${QtGoogleAnalytics_SRC})
 target_link_libraries(QtGoogleAnalytics ${Qt5Core_LIBRARIES} ${Qt5Network_LIBRARIES})

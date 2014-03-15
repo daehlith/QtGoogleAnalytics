@@ -5,10 +5,12 @@ endif()
 
 project(QtGoogleAnalytics)
 
-if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-endif(CMAKE_COMPILER_IS_GNUCXX)
+if(MSVC)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wall /Wx")
+else(MSVC)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
+endif(MSVC)
 
 set(QtGoogleAnalytics_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/QtGoogleAnalytics.h)
