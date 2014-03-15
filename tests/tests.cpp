@@ -1,97 +1,151 @@
-#include <QString>
+/*
+ * Copyright (c) 2014 Thomas Daehling <doc@methedrine.org>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+#include <QBuffer>
+#include <QCoreApplication>
+#include <QNetworkRequest>
+#include <QSignalSpy>
+#include <QStringList>
+#include <QTimer>
+#include <QUrl>
+#include <QUrlQuery>
 
 #include <gtest/gtest.h>
-#include <gtest/gtest-spi.h>
 
-#include <QtGA/QtGA.h>
+#include "../src/QtGoogleAnalytics.h"
 
-TEST(QtGAConfiguration_Tests, tracking_id_test)
+#include "testnetworkaccessmanager.h"
+
+TEST(Tracker, setNetworkAccessManager)
 {
-    const QString longTrackingID("UA-9876543210-1234");
-    const QString shortTrackingID("UA-4321-0");
-    const QString invalidTrackingID("FOO-BAR-BAZ");
-
-    QtGAConfiguration configuration;
-    configuration.setTrackingID(longTrackingID);
-    EXPECT_EQ(longTrackingID, configuration.trackingID());
-    configuration.setTrackingID(shortTrackingID);
-    EXPECT_EQ(shortTrackingID, configuration.trackingID());
-    configuration.setTrackingID(invalidTrackingID);
-    EXPECT_EQ(QString(""), configuration.trackingID());
+    // Tests that we can a network manager to use
+    TestNetworkAccessManager nam;
+    QtGoogleAnalyticsTracker tracker;
+    // 1. network access manager cannot be nulled
+    tracker.setNetworkAccessManager( nullptr );
+    EXPECT_NE( nullptr, tracker.networkAccessManager() );
+    // 2. network access manager can be set to valid values
+    tracker.setNetworkAccessManager( &nam );
+    EXPECT_EQ( &nam, tracker.networkAccessManager() );
 }
 
-TEST(QtGAConfiguration_Tests, connector_test)
+TEST(Tracker, trackingID)
 {
-    QtGAConfiguration configuration;
-    EXPECT_FALSE(configuration.isSecure());
-    configuration.setEndpoint(QtGAConfiguration::SecureEndpoint);
-#ifndef QT_NO_SSL
-    EXPECT_TRUE(configuration.isSecure());
-#else
-    EXPECT_NONFATAL_FAILURE(EXPECT_TRUE(configuration.isSecure()), "Qt was built without SSL support");
-#endif
+    QtGoogleAnalyticsTracker tracker;
+    QString empty;
+
+    // 1. Proper initialization
+    EXPECT_EQ( empty, tracker.trackingID() );
+
+    // 2. a bunch of invalid tracking IDs
+    tracker.setTrackingID( QString( "WT-1234-56" ) );
+    EXPECT_EQ( empty, tracker.trackingID() );
+    tracker.setTrackingID( QString( "-1234-56" ) );
+    EXPECT_EQ( empty, tracker.trackingID() );
+    tracker.setTrackingID( QString( "UA--12" ) );
+    EXPECT_EQ( empty, tracker.trackingID() );
+    tracker.setTrackingID( QString( "YT-1-" ) );
+    EXPECT_EQ( empty, tracker.trackingID() );
+    tracker.setTrackingID( QString( "-123-" ) );
+    EXPECT_EQ( empty, tracker.trackingID() );
+    tracker.setTrackingID( QString( "--1234" ) );
+
+    // 3. a bunch of valid tracking IDs
+    QStringList expectedTrackingIDs;
+    expectedTrackingIDs << "UA-1234-12" \
+                        << "YT-1234-12" \
+                        << "MO-1-1" \
+                        << "UA-1234-1" \
+                        << "ua-1-1";
+    Q_FOREACH( QString expected, expectedTrackingIDs )
+    {
+        tracker.setTrackingID( expected );
+        EXPECT_EQ( expected, tracker.trackingID() );
+    }
 }
 
-TEST(QtGAConfiguration_Tests, endpoint_tests)
+TEST(Tracker, track)
 {
-    QtGAConfiguration configuration;
-    EXPECT_EQ(QtGAConfiguration::NormalEndpoint, configuration.endpoint());
+    // test that we can actually track stuff using QtGoogleAnalytics
+    TestNetworkAccessManager nam;
+    QNetworkRequest expectedRequest;
+    QtGoogleAnalyticsTracker tracker;
+    QtGoogleAnalyticsTracker::ParameterList testParams;
+    QString testTrackingID( "UA-0-0" );
+    QSignalSpy spy( &tracker, SIGNAL( tracked() ) );
+    QUrlQuery testQuery;
 
-    // specifying an invalid endpoint won't work
-    configuration.setEndpoint(QUrl());
-    EXPECT_EQ(QtGAConfiguration::NormalEndpoint, configuration.endpoint());
+    expectedRequest.setHeader( QNetworkRequest::UserAgentHeader, QtGoogleAnalyticsTracker::UserAgent );
+    expectedRequest.setHeader( QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded" );
+    expectedRequest.setUrl( QtGoogleAnalyticsTracker::NormalEndpoint );
 
-    configuration.setEndpoint(QtGAConfiguration::SecureEndpoint);
-#ifndef QT_NO_SSL
-    EXPECT_EQ(QtGAConfiguration::SecureEndpoint, configuration.endpoint());
-#else
-    configuration.setEndpoint(QtGAConfiguration::NormalEndpoint);
-    configuration.setEndpoint(QtGAConfiguration::SecureEndpoint);
-    EXPECT_NONFATAL_FAILURE(EXPECT_EQ(QtGAConfiguration::SecureEndpoint, configuration.endpoint()), "Qt was built without SSL support");
-#endif
+    testParams << QPair<QString, QString>( "v", "1" );
+
+    testQuery.setQueryItems( testParams );
+    testQuery.addQueryItem( "tid", testTrackingID );
+
+    nam.setExpectedRequest( &expectedRequest );
+    nam.setExpectedData( testQuery.toString( QUrl::FullyEncoded ) );
+
+    tracker.setTrackingID( testTrackingID );
+    tracker.setNetworkAccessManager( &nam );
+    tracker.track( testParams );
+
+    spy.wait();
+
+    EXPECT_EQ( 1, spy.count() );
+    EXPECT_FALSE( nam.failed() );
 }
 
-TEST(QtGAConfiguration_Tests, client_id_tests)
+TEST(Tracker, userAgent)
 {
-    const QString validVersion4Uuid = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
-    const QUuid expected = QUuid(validVersion4Uuid);
-    const QUuid noVersion4Uuid = QUuid("f47ac10b-58cc-5372-b567-0e02b2c3d479");
+    QtGoogleAnalyticsTracker tracker;
+    QString expectedUserAgent( "QtGoogleAnalyticsTrackerTests/1.0" );
 
-    QtGAConfiguration configuration;
-    EXPECT_TRUE(configuration.clientID().isNull());
-
-    configuration.setClientID(expected);
-    EXPECT_EQ(expected, configuration.clientID());
-
-    // An invalid clientID should not change the existing value
-    configuration.setClientID(noVersion4Uuid);
-    EXPECT_EQ(expected, configuration.clientID());
-
-    // TODO check that the request contains the cid parameter, and that it matches the expected UUIDv4 string
+    // 1. Initialization to default value
+    EXPECT_EQ( QtGoogleAnalyticsTracker::UserAgent, tracker.userAgent() );
+    // 2. Illegal user-agent strings do not change the value
+    tracker.setUserAgent( "" );
+    EXPECT_EQ( QtGoogleAnalyticsTracker::UserAgent, tracker.userAgent() );
+    // 3. Valid user-agent strings are accepted
+    tracker.setUserAgent( expectedUserAgent );
+    EXPECT_EQ( expectedUserAgent, tracker.userAgent() );
 }
 
-TEST(QtGAConfiguration_Tests, cache_busting_tests)
+TEST(Tracker, endpoint)
 {
-    QtGAConfiguration configuration;
-    EXPECT_FALSE(configuration.cacheBusting());
-    configuration.setCacheBusting(true);
-    EXPECT_TRUE(configuration.cacheBusting());
-    // TODO check for "z" being appended to the final URL
-    // TODO check for "z" being different for every request
+    QtGoogleAnalyticsTracker tracker;
+
+    // 1. Initialization to default value
+    EXPECT_EQ( QtGoogleAnalyticsTracker::NormalEndpoint, tracker.endpoint() );
+    // 2. Invalid endpoint URL should not change the value
+    tracker.setEndpoint( QUrl("") );
+    EXPECT_EQ( QtGoogleAnalyticsTracker::NormalEndpoint, tracker.endpoint() );
+    // 3. Valid endpoint URL is accepted
+    tracker.setEndpoint( QtGoogleAnalyticsTracker::SecureEndpoint );
+    EXPECT_EQ( QtGoogleAnalyticsTracker::SecureEndpoint, tracker.endpoint() );
 }
 
-TEST(QtGAConfiguration_Tests, IP_anonymization_tests)
+int main(int argc, char** argv)
 {
-    QtGAConfiguration configuration;
-    EXPECT_FALSE(configuration.anonymizeIP());
-    configuration.setIPAnonymization(true);
-    EXPECT_TRUE(configuration.anonymizeIP());
-    // TODO check for "aip" being appened to the final URL
-}
-
-TEST(QtGAConfiguration_Tests, user_agent_tests)
-{
-    QtGAConfiguration configuration;
-    EXPECT_EQ(QtGAConfiguration::UserAgent, configuration.userAgent());
-    // TODO check for user agent validation
+    QCoreApplication app( argc, argv );
+    ::testing::InitGoogleTest( &argc, argv );
+    return RUN_ALL_TESTS();
 }
