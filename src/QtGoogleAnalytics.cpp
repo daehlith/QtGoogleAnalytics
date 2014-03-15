@@ -92,7 +92,7 @@ void QtGoogleAnalyticsTracker::onFinished( QNetworkReply *reply )
 {
     if ( reply->error() != QNetworkReply::NoError )
     {
-        qWarning( reply->errorString().toLocal8Bit() );
+        qWarning( "Network reply finished with error: %s", qPrintable( reply->errorString() ) );
     }
     reply->deleteLater();
     emit tracked();
