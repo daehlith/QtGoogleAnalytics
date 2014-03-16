@@ -27,16 +27,25 @@
 #include <QNetworkRequest>
 
 TestNetworkAccessManager::TestNetworkAccessManager(QObject *parent) :
-    QNetworkAccessManager(parent), m_expectedRequest( nullptr ), m_failed( false )
+    QNetworkAccessManager(parent), m_expectedRequest( nullptr ), m_failed( false ),
+    m_expectedOp( QNetworkAccessManager::PostOperation )
 {
 }
 
 QNetworkReply* TestNetworkAccessManager::createRequest( QNetworkAccessManager::Operation op, const QNetworkRequest& request, QIODevice *outgoingData )
 {
-    QByteArray outgoing = outgoingData->readAll();
+    // Url, headers or metadata do not match
+    m_failed = ( request != *m_expectedRequest );
 
-    m_failed = ( request != *m_expectedRequest ); // Url, headers or metadata do not match
-    m_failed |= ( outgoing != m_expectedData ); // payload mismatch
+    // payload mismatch
+    if ( outgoingData )
+    {
+        QByteArray outgoing = outgoingData->readAll();
+        m_failed |= ( outgoing != m_expectedData );
+    }
+
+    // operation mismatch
+    m_failed |= ( op != m_expectedOp );
 
     return QNetworkAccessManager::createRequest( op, request, outgoingData );
 }
@@ -49,6 +58,11 @@ void TestNetworkAccessManager::setExpectedRequest( QNetworkRequest *request )
 void TestNetworkAccessManager::setExpectedData( const QString& data )
 {
     m_expectedData = data;
+}
+
+void TestNetworkAccessManager::setExpectedOperation( QNetworkAccessManager::Operation op )
+{
+    m_expectedOp = op;
 }
 
 bool TestNetworkAccessManager::failed() const

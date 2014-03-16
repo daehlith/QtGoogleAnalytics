@@ -25,11 +25,11 @@
 #include "QtGoogleAnalytics_global.h"
 
 #include <QList>
+#include <QNetworkAccessManager>
 #include <QObject>
 #include <QString>
 #include <QUrl>
 
-class QNetworkAccessManager;
 class QNetworkReply;
 
 class QT_GA_EXPORTS QtGoogleAnalyticsTracker : public QObject
@@ -63,6 +63,9 @@ public:
     void setClientID( const QString& clientID );
     QString clientID() const;
 
+    void setOperation( QNetworkAccessManager::Operation op );
+    QNetworkAccessManager::Operation operation() const;
+
 signals:
     void tracked();
 
@@ -77,6 +80,7 @@ private:
     QString m_userAgent;
     QUrl m_endpoint;
     QString m_clientID;
+    QNetworkAccessManager::Operation m_operation;
 };
 
 #endif // QTGOOGLEANALYTICS_H

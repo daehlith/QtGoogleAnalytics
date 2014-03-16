@@ -21,7 +21,6 @@
 #include "QtGoogleAnalytics.h"
 
 #include <QtGlobal>
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegExp>
@@ -35,7 +34,8 @@ const QString QtGoogleAnalyticsTracker::ProtocolVersion( "1" );
 
 QtGoogleAnalyticsTracker::QtGoogleAnalyticsTracker( QObject *parent )
     : QObject( parent ), m_nam( new QNetworkAccessManager( this ) ), m_userAgent( QtGoogleAnalyticsTracker::UserAgent ),
-      m_endpoint( QtGoogleAnalyticsTracker::NormalEndpoint ), m_clientID( QtGoogleAnalyticsTracker::DefaultClientID )
+      m_endpoint( QtGoogleAnalyticsTracker::NormalEndpoint ), m_clientID( QtGoogleAnalyticsTracker::DefaultClientID ),
+      m_operation( QNetworkAccessManager::PostOperation )
 {
     connectSignals();
 }
@@ -83,10 +83,22 @@ void QtGoogleAnalyticsTracker::track( const QtGoogleAnalyticsTracker::ParameterL
 void QtGoogleAnalyticsTracker::track( const QByteArray& data )
 {
     QNetworkRequest req;
-    req.setUrl( m_endpoint );
     req.setHeader( QNetworkRequest::UserAgentHeader, m_userAgent );
-    req.setHeader( QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded" );
-    m_nam->post( req, data );
+
+    if ( m_operation == QNetworkAccessManager::PostOperation )
+    {
+        req.setHeader( QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded" );
+        req.setUrl( m_endpoint );
+
+        m_nam->post( req, data );
+    }
+    else if ( m_operation == QNetworkAccessManager::GetOperation )
+    {
+        QUrl url = m_endpoint;
+        url.setQuery( QString::fromLatin1( data ) );
+        req.setUrl( url );
+        m_nam->get( req );
+    }
 }
 
 void QtGoogleAnalyticsTracker::connectSignals()
@@ -158,4 +170,22 @@ void QtGoogleAnalyticsTracker::setClientID( const QString& clientID )
 QString QtGoogleAnalyticsTracker::clientID() const
 {
     return m_clientID;
+}
+
+void QtGoogleAnalyticsTracker::setOperation( QNetworkAccessManager::Operation op )
+{
+    switch( op )
+    {
+        case QNetworkAccessManager::PostOperation:
+        case QNetworkAccessManager::GetOperation:
+            m_operation = op;
+            break;
+        default:
+            return;
+    }
+}
+
+QNetworkAccessManager::Operation QtGoogleAnalyticsTracker::operation() const
+{
+    return m_operation;
 }
