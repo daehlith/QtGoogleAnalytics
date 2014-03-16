@@ -35,7 +35,7 @@ const QString QtGoogleAnalyticsTracker::ProtocolVersion( "1" );
 QtGoogleAnalyticsTracker::QtGoogleAnalyticsTracker( QObject *parent )
     : QObject( parent ), m_nam( new QNetworkAccessManager( this ) ), m_userAgent( QtGoogleAnalyticsTracker::UserAgent ),
       m_endpoint( QtGoogleAnalyticsTracker::NormalEndpoint ), m_clientID( QtGoogleAnalyticsTracker::DefaultClientID ),
-      m_operation( QNetworkAccessManager::PostOperation )
+      m_operation( QNetworkAccessManager::PostOperation ), m_cacheBusting( false )
 {
     connectSignals();
 }
@@ -77,16 +77,21 @@ void QtGoogleAnalyticsTracker::track( const QtGoogleAnalyticsTracker::ParameterL
     query.addQueryItem( QString( "v" ), ProtocolVersion );
     query.addQueryItem( QString( "tid" ), m_trackingID );
     query.addQueryItem( QString( "cid" ), m_clientID );
-    track( query.toString( QUrl::FullyEncoded ).toLatin1() );
+    track( query );
 }
 
-void QtGoogleAnalyticsTracker::track( const QByteArray& data )
+void QtGoogleAnalyticsTracker::track( const QUrlQuery& query )
 {
     QNetworkRequest req;
     req.setHeader( QNetworkRequest::UserAgentHeader, m_userAgent );
 
     if ( m_operation == QNetworkAccessManager::PostOperation )
     {
+        QByteArray data = query.toString( QUrl::FullyEncoded ).toLatin1();
+        if ( data.size() > 8192 )
+        {
+            qWarning( "%d exceeds 8192 byte payload size limit for POST operations.", data.size() );
+        }
         req.setHeader( QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded" );
         req.setUrl( m_endpoint );
 
@@ -95,8 +100,22 @@ void QtGoogleAnalyticsTracker::track( const QByteArray& data )
     else if ( m_operation == QNetworkAccessManager::GetOperation )
     {
         QUrl url = m_endpoint;
-        url.setQuery( QString::fromLatin1( data ) );
+        QUrlQuery q = query;
+
+        if ( m_cacheBusting )
+        {
+            q.addQueryItem( "z", QString::number( qrand() % 100000000 ) );
+        }
+
+        url.setQuery( q );
         req.setUrl( url );
+
+        int size = url.toString( QUrl::FullyEncoded ).size();
+        if ( size > 2000 )
+        {
+            qWarning( "%d exceeds 2000 byte payload size limit for GET operations.", size );
+        }
+
         m_nam->get( req );
     }
 }
@@ -188,4 +207,14 @@ void QtGoogleAnalyticsTracker::setOperation( QNetworkAccessManager::Operation op
 QNetworkAccessManager::Operation QtGoogleAnalyticsTracker::operation() const
 {
     return m_operation;
+}
+
+void QtGoogleAnalyticsTracker::setCacheBusting( bool enabled )
+{
+    m_cacheBusting = enabled;
+}
+
+bool QtGoogleAnalyticsTracker::cacheBusting() const
+{
+    return m_cacheBusting;
 }

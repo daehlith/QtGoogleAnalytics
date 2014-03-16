@@ -189,6 +189,16 @@ TEST(Tracker, operation)
     EXPECT_EQ( QNetworkAccessManager::GetOperation, tracker.operation() );
 }
 
+TEST(Tracker, cacheBusting)
+{
+    QtGoogleAnalyticsTracker tracker;
+    // 1. Initialization
+    EXPECT_FALSE( tracker.cacheBusting() );
+    // 2. Setter
+    tracker.setCacheBusting( true );
+    EXPECT_TRUE( tracker.cacheBusting() );
+}
+
 int main(int argc, char** argv)
 {
     QCoreApplication app( argc, argv );

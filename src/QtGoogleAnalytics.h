@@ -49,7 +49,7 @@ public:
     QNetworkAccessManager* networkAccessManager() const;
 
     void track( const QList<QPair<QString, QString> >& parameters );
-    void track( const QByteArray& data );
+    void track( const QUrlQuery& data );
 
     void setTrackingID( const QString& trackingID );
     QString trackingID() const;
@@ -66,6 +66,9 @@ public:
     void setOperation( QNetworkAccessManager::Operation op );
     QNetworkAccessManager::Operation operation() const;
 
+    void setCacheBusting( bool enabled );
+    bool cacheBusting() const;
+
 signals:
     void tracked();
 
@@ -81,6 +84,7 @@ private:
     QUrl m_endpoint;
     QString m_clientID;
     QNetworkAccessManager::Operation m_operation;
+    bool m_cacheBusting;
 };
 
 #endif // QTGOOGLEANALYTICS_H
