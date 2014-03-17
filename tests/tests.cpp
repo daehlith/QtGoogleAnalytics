@@ -34,11 +34,13 @@
 
 #include "testnetworkaccessmanager.h"
 
+using namespace QtGoogleAnalytics;
+
 TEST(Tracker, setNetworkAccessManager)
 {
     // Tests that we can a network manager to use
     TestNetworkAccessManager nam;
-    QtGoogleAnalyticsTracker tracker;
+    Tracker tracker;
     // 1. network access manager cannot be nulled
     tracker.setNetworkAccessManager( nullptr );
     EXPECT_NE( nullptr, tracker.networkAccessManager() );
@@ -49,7 +51,7 @@ TEST(Tracker, setNetworkAccessManager)
 
 TEST(Tracker, trackingID)
 {
-    QtGoogleAnalyticsTracker tracker;
+    Tracker tracker;
     QString empty;
 
     // 1. Proper initialization
@@ -87,19 +89,19 @@ TEST(Tracker, track)
     // test that we can actually track stuff using QtGoogleAnalytics
     TestNetworkAccessManager nam;
     QNetworkRequest expectedPostRequest;
-    QtGoogleAnalyticsTracker tracker;
-    QtGoogleAnalyticsTracker::ParameterList testParams;
+    Tracker tracker;
+    Tracker::ParameterList testParams;
     QString testTrackingID( "UA-0-0" );
     QSignalSpy spy( &tracker, SIGNAL( tracked() ) );
     QUrlQuery expectedData;
 
-    expectedPostRequest.setHeader( QNetworkRequest::UserAgentHeader, QtGoogleAnalyticsTracker::UserAgent );
+    expectedPostRequest.setHeader( QNetworkRequest::UserAgentHeader, Tracker::UserAgent );
     expectedPostRequest.setHeader( QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded" );
-    expectedPostRequest.setUrl( QtGoogleAnalyticsTracker::NormalEndpoint );
+    expectedPostRequest.setUrl( Tracker::NormalEndpoint );
 
     expectedData.addQueryItem( "v", "1" );
     expectedData.addQueryItem( "tid", testTrackingID );
-    expectedData.addQueryItem( "cid", QtGoogleAnalyticsTracker::DefaultClientID );
+    expectedData.addQueryItem( "cid", Tracker::DefaultClientID );
 
     nam.setExpectedRequest( &expectedPostRequest );
     nam.setExpectedData( expectedData.toString( QUrl::FullyEncoded ) );
@@ -115,11 +117,11 @@ TEST(Tracker, track)
 
     // GET request
     QNetworkRequest expectedGetRequest;
-    QUrl tmp = QUrl( QtGoogleAnalyticsTracker::NormalEndpoint );
+    QUrl tmp = QUrl( Tracker::NormalEndpoint );
     tmp.setQuery( expectedData );
 
     expectedGetRequest.setUrl( tmp );
-    expectedGetRequest.setHeader( QNetworkRequest::UserAgentHeader, QtGoogleAnalyticsTracker::UserAgent );
+    expectedGetRequest.setHeader( QNetworkRequest::UserAgentHeader, Tracker::UserAgent );
 
     nam.setExpectedRequest( &expectedGetRequest );
     nam.setExpectedOperation( QNetworkAccessManager::GetOperation );
@@ -134,14 +136,14 @@ TEST(Tracker, track)
 
 TEST(Tracker, userAgent)
 {
-    QtGoogleAnalyticsTracker tracker;
+    QtGoogleAnalytics::Tracker tracker;
     QString expectedUserAgent( "QtGoogleAnalyticsTrackerTests/1.0" );
 
     // 1. Initialization to default value
-    EXPECT_EQ( QtGoogleAnalyticsTracker::UserAgent, tracker.userAgent() );
+    EXPECT_EQ( Tracker::UserAgent, tracker.userAgent() );
     // 2. Illegal user-agent strings do not change the value
     tracker.setUserAgent( "" );
-    EXPECT_EQ( QtGoogleAnalyticsTracker::UserAgent, tracker.userAgent() );
+    EXPECT_EQ( Tracker::UserAgent, tracker.userAgent() );
     // 3. Valid user-agent strings are accepted
     tracker.setUserAgent( expectedUserAgent );
     EXPECT_EQ( expectedUserAgent, tracker.userAgent() );
@@ -149,25 +151,25 @@ TEST(Tracker, userAgent)
 
 TEST(Tracker, endpoint)
 {
-    QtGoogleAnalyticsTracker tracker;
+    Tracker tracker;
 
     // 1. Initialization to default value
-    EXPECT_EQ( QtGoogleAnalyticsTracker::NormalEndpoint, tracker.endpoint() );
+    EXPECT_EQ( Tracker::NormalEndpoint, tracker.endpoint() );
     // 2. Invalid endpoint URL should not change the value
     tracker.setEndpoint( QUrl("") );
-    EXPECT_EQ( QtGoogleAnalyticsTracker::NormalEndpoint, tracker.endpoint() );
+    EXPECT_EQ( Tracker::NormalEndpoint, tracker.endpoint() );
     // 3. Valid endpoint URL is accepted
-    tracker.setEndpoint( QtGoogleAnalyticsTracker::SecureEndpoint );
-    EXPECT_EQ( QtGoogleAnalyticsTracker::SecureEndpoint, tracker.endpoint() );
+    tracker.setEndpoint( Tracker::SecureEndpoint );
+    EXPECT_EQ( Tracker::SecureEndpoint, tracker.endpoint() );
 }
 
 TEST(Tracker, clientID)
 {
-    QtGoogleAnalyticsTracker tracker;
+    Tracker tracker;
     QString expectedClientID( "testID" );
 
     // 1. Initialization
-    EXPECT_EQ( QtGoogleAnalyticsTracker::DefaultClientID, tracker.clientID() );
+    EXPECT_EQ( Tracker::DefaultClientID, tracker.clientID() );
     // 2. Valid clientIDs are accepted
     tracker.setClientID( expectedClientID );
     EXPECT_EQ( expectedClientID, tracker.clientID() );
@@ -178,7 +180,7 @@ TEST(Tracker, clientID)
 
 TEST(Tracker, operation)
 {
-    QtGoogleAnalyticsTracker tracker;
+    Tracker tracker;
     // 1. Initialization
     EXPECT_EQ( QNetworkAccessManager::PostOperation, tracker.operation() );
     // 2. Unsupported operations are ignored
@@ -191,7 +193,7 @@ TEST(Tracker, operation)
 
 TEST(Tracker, cacheBusting)
 {
-    QtGoogleAnalyticsTracker tracker;
+    Tracker tracker;
     // 1. Initialization
     EXPECT_FALSE( tracker.cacheBusting() );
     // 2. Setter

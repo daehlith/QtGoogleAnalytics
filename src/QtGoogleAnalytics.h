@@ -32,18 +32,22 @@
 
 class QNetworkReply;
 
-class QT_GA_EXPORTS QtGoogleAnalyticsTracker : public QObject
+namespace QtGoogleAnalytics
+{
+
+class QT_GA_EXPORTS Tracker : public QObject
 {
     Q_OBJECT
 public:
     typedef QList<QPair<QString, QString> > ParameterList;
+
     static const QUrl NormalEndpoint;
     static const QUrl SecureEndpoint;
     static const QString UserAgent;
     static const QString DefaultClientID;
     static const QString ProtocolVersion;
 
-    explicit QtGoogleAnalyticsTracker( QObject* parent=nullptr );
+    explicit Tracker( QObject* parent=nullptr );
 
     void setNetworkAccessManager( QNetworkAccessManager* nam );
     QNetworkAccessManager* networkAccessManager() const;
@@ -86,5 +90,7 @@ private:
     QNetworkAccessManager::Operation m_operation;
     bool m_cacheBusting;
 };
+
+}
 
 #endif // QTGOOGLEANALYTICS_H
