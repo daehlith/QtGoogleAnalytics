@@ -14,7 +14,9 @@ To build QtGoogleAnalytics from source you will need
 [CMake](http://www.cmake.org) (>=2.8), and
 [Qt](http://www.qt-project.org) (>=5.1).
 
-Note that building *might* work with earlier versions of CMake and Qt, but I have not tested this.
+Additionally, the tests require [Google Test Framework](http://googletest.googlecode.com) (>=1.70).
+
+Note that building *might* work with earlier versions of those tools and libraries, but I have not tested this.
 
 If you want to use SSL encryption in QtGoogleAnalytics please ensure that Qt was build with SSL support.
 
