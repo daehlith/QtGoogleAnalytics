@@ -27,6 +27,7 @@
 #include <QList>
 #include <QNetworkAccessManager>
 #include <QObject>
+#include <QSet>
 #include <QString>
 #include <QUrl>
 
@@ -89,6 +90,7 @@ private:
     QString m_clientID;
     QNetworkAccessManager::Operation m_operation;
     bool m_cacheBusting;
+    QSet<QNetworkReply*> m_replies;
 };
 
 }

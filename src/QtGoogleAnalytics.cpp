@@ -97,7 +97,7 @@ void Tracker::track( const QUrlQuery& query )
         req.setHeader( QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded" );
         req.setUrl( m_endpoint );
 
-        m_nam->post( req, data );
+        m_replies.insert( m_nam->post( req, data ) );
     }
     else if ( m_operation == QNetworkAccessManager::GetOperation )
     {
@@ -118,7 +118,7 @@ void Tracker::track( const QUrlQuery& query )
             qWarning( "%d exceeds 2000 byte payload size limit for GET operations.", size );
         }
 
-        m_nam->get( req );
+        m_replies.insert( m_nam->get( req ) );
     }
 }
 
@@ -129,11 +129,17 @@ void Tracker::connectSignals()
 
 void Tracker::onFinished( QNetworkReply *reply )
 {
+    if ( ! m_replies.contains( reply ) )
+    {
+        return;
+    }
+
     if ( reply->error() != QNetworkReply::NoError )
     {
         qWarning( "Network reply finished with error: %s", qPrintable( reply->errorString() ) );
     }
     reply->deleteLater();
+    m_replies.remove( reply );
     emit tracked();
 }
 
