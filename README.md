@@ -35,7 +35,23 @@ Testing
 -------
 QtGoogleAnalytics ships with a set of automated tests.
 
-Assuming the outlied build instructions were used, this is how you build and run the tests:
+Assuming the above build instructions were used, this is how you compile and run the tests:
 
     make tests
     ../bin/tests
+
+Future Improvements
+-------------------
+Though this library is already usable it is still in very early development. This is nothing bad per se, but it also
+means that there is room for improvements. In this section I am keeping track of what is bothering me at the moment. Partly to keep ideas for future blogs about this lib.
+
+ - Validation is not quite there yet. Some of the most obvious problems are ruled out, but I really want to add
+   some form of making sure that hits contain all required parameters, and that all values are as expected.
+ - Error reporting is lacking. Printing messages through Qt's message handler is OK for now, but some form of error
+   signal should be available so that users of this library can respond to those conditions, if they want to.
+ - The if-else switch based on the QNetworkAccessManager::Operation looks weird. This isn't a runtime choice, so
+   this could probably be replaced with some form of policy where templates get evaluated at compile time.
+ - Add support for something like "prepared hits", e.g. a way where some sort of hit template can be specified
+   and only very few parameters need to get added.
+ - Look into some small optimization with regards to construction of the QNetworkRequest in track. There is no need to
+   always do all the work, even though that does somewhat depend on the request method we are using.
