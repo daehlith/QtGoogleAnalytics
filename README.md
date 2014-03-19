@@ -55,3 +55,4 @@ means that there is room for improvements. In this section I am keeping track of
    and only very few parameters need to get added.
  - Look into some small optimization with regards to construction of the QNetworkRequest in track. There is no need to
    always do all the work, even though that does somewhat depend on the request method we are using.
+ - What happens if we are using a foreign QNetworkAccessManager instance that is about to be deleted?
