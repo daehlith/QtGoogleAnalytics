@@ -8,7 +8,7 @@ env:
 addons:
   coverity_scan:
     project:
-      name: "daehlith/QtGA"
+      name: "daehlith/QtGoogleAnalytics"
       description: "A library for integrating Google Analytics in a Qt application."
     notification_email: doc@methedrine.org
     build_command_prepend: cmake ..
