@@ -1,19 +1,21 @@
-language: cpp
-compiler:
-  - clang
-  - gcc
 env:
   global:
-   - secure: "cYAxFSPFqmj60utekefYOMtF1ay1xOY7C3HxiIPSDHV8+v7AfQTc4IgZi8e01T/uyL2gTvwN5fbKKJwnOQ6juNapKaJoA449W4bCxLM7v/Ti6laW6/NfXScqBYP9fyiSGkCVa9azkfEakwRrhVJYcab/fEZdEHWbmcR4Q2DyQY4="
+   - secure: "D0Zi3FPkQ6zediBNTuwxCIrn3W0amz+kfE0Q7o7JmL77rusY3pFIzhChbDWHflYxOhiHnrFvy8MS9kiMenTyqX/jBl2yyiJRGEqnaWSJ4EDc3kr01MPrpkzZ+/x62s6kWE8YHdTHDAa6dIhXW4fVnWvFTmUO05VW2RoPOdXe7DA="
+
 addons:
   coverity_scan:
     project:
       name: "daehlith/QtGoogleAnalytics"
-      description: "A library for integrating Google Analytics in a Qt application."
+      description: "A library for integrating Google Analytics in a Qt application"
     notification_email: doc@methedrine.org
     build_command_prepend: cmake ..
     build_command: make
     branch_pattern: coverity_scan
+
+language: cpp
+compiler:
+  - clang
+  - gcc
 
 before_install:
         - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
