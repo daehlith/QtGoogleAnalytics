@@ -4,11 +4,11 @@ compiler:
   - gcc
 env:
   global:
-   - secure: "BN+UKIVFWBTrd1UgN+cPSOVK+L0agSH/FLnMJ59H7YXThAPWBlMor4cWajyrKxJs0UMXqF5Dc2upMHMQraLm1OREVwrXgAwHrJUQKY8vwBY3MNFhl5Tb6dwMxUnBt/Wlu3sSvDZucfm1h9dhSPlu2p8MPWZDZF2HpGT8dgdUkn0="
+   - secure: "cYAxFSPFqmj60utekefYOMtF1ay1xOY7C3HxiIPSDHV8+v7AfQTc4IgZi8e01T/uyL2gTvwN5fbKKJwnOQ6juNapKaJoA449W4bCxLM7v/Ti6laW6/NfXScqBYP9fyiSGkCVa9azkfEakwRrhVJYcab/fEZdEHWbmcR4Q2DyQY4="
 addons:
   coverity_scan:
     project:
-      name: "daehlith/QtGA"
+      name: "daehlith/QtGoogleAnalytics"
       description: "A library for integrating Google Analytics in a Qt application."
     notification_email: doc@methedrine.org
     build_command_prepend: cmake ..
@@ -35,7 +35,7 @@ script:
         - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make tests ; fi
 after_success:
         - ls -all
-        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then ./tests ; fi
+        - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then ./bin/tests ; fi
 notifications:
         recipients:
                 - doc@methedrine.org
