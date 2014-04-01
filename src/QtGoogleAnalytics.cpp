@@ -21,19 +21,23 @@
 #include "QtGoogleAnalytics.h"
 
 #include <QtGlobal>
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegExp>
 #include <QUrlQuery>
 
-const QUrl QtGoogleAnalyticsTracker::NormalEndpoint( "http://www.google-analytics.com/collect" );
-const QUrl QtGoogleAnalyticsTracker::SecureEndpoint( "https://ssl.google-analytics.com/collect" );
-const QString QtGoogleAnalyticsTracker::UserAgent( "QtGoogleAnalyticsTracker/1.0" );
+using namespace QtGoogleAnalytics;
 
-QtGoogleAnalyticsTracker::QtGoogleAnalyticsTracker( QObject *parent )
-    : QObject( parent ), m_nam( new QNetworkAccessManager( this ) ), m_userAgent( QtGoogleAnalyticsTracker::UserAgent ),
-      m_endpoint( QtGoogleAnalyticsTracker::NormalEndpoint )
+const QUrl Tracker::NormalEndpoint( "http://www.google-analytics.com/collect" );
+const QUrl Tracker::SecureEndpoint( "https://ssl.google-analytics.com/collect" );
+const QString Tracker::UserAgent( "QtGoogleAnalyticsTracker/1.0" );
+const QString Tracker::DefaultClientID( "QtGoogleAnalytics" );
+const QString Tracker::ProtocolVersion( "1" );
+
+Tracker::Tracker( QObject *parent )
+    : QObject( parent ), m_nam( new QNetworkAccessManager( this ) ), m_userAgent( UserAgent ),
+      m_endpoint( NormalEndpoint ), m_clientID( DefaultClientID ),
+      m_operation( QNetworkAccessManager::PostOperation ), m_cacheBusting( false )
 {
     connectSignals();
 }
@@ -48,7 +52,7 @@ QtGoogleAnalyticsTracker::QtGoogleAnalyticsTracker( QObject *parent )
  *
  * \sa networkAccessManager()
  */
-void QtGoogleAnalyticsTracker::setNetworkAccessManager( QNetworkAccessManager *nam )
+void Tracker::setNetworkAccessManager( QNetworkAccessManager *nam )
 {
     if ( ! nam )
     {
@@ -63,42 +67,83 @@ void QtGoogleAnalyticsTracker::setNetworkAccessManager( QNetworkAccessManager *n
     connectSignals();
 }
 
-QNetworkAccessManager* QtGoogleAnalyticsTracker::networkAccessManager() const
+QNetworkAccessManager* Tracker::networkAccessManager() const
 {
     return m_nam;
 }
 
-void QtGoogleAnalyticsTracker::track( const QtGoogleAnalyticsTracker::ParameterList& parameters )
+void Tracker::track( const Tracker::ParameterList& parameters )
 {
-    QByteArray data;
-    QNetworkRequest req;
-    QUrl url = NormalEndpoint;
     QUrlQuery query;
     query.setQueryItems( parameters );
+    query.addQueryItem( QString( "v" ), ProtocolVersion );
     query.addQueryItem( QString( "tid" ), m_trackingID );
-    data = query.toString( QUrl::FullyEncoded ).toLatin1();
-    req.setUrl( url );
-    req.setHeader( QNetworkRequest::UserAgentHeader, m_userAgent );
-    req.setHeader( QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded" );
-    m_nam->post( req, data );
+    query.addQueryItem( QString( "cid" ), m_clientID );
+    track( query );
 }
 
-void QtGoogleAnalyticsTracker::connectSignals()
+void Tracker::track( const QUrlQuery& query )
+{
+    QNetworkRequest req;
+    req.setHeader( QNetworkRequest::UserAgentHeader, m_userAgent );
+
+    if ( m_operation == QNetworkAccessManager::PostOperation )
+    {
+        QByteArray data = query.toString( QUrl::FullyEncoded ).toLatin1();
+        if ( data.size() > 8192 )
+        {
+            qWarning( "%d exceeds 8192 byte payload size limit for POST operations.", data.size() );
+        }
+        req.setHeader( QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded" );
+        req.setUrl( m_endpoint );
+
+        m_replies.insert( m_nam->post( req, data ) );
+    }
+    else if ( m_operation == QNetworkAccessManager::GetOperation )
+    {
+        QUrl url = m_endpoint;
+        QUrlQuery q = query;
+
+        if ( m_cacheBusting )
+        {
+            q.addQueryItem( "z", QString::number( qrand() % 100000000 ) );
+        }
+
+        url.setQuery( q );
+        req.setUrl( url );
+
+        int size = url.toString( QUrl::FullyEncoded ).size();
+        if ( size > 2000 )
+        {
+            qWarning( "%d exceeds 2000 byte payload size limit for GET operations.", size );
+        }
+
+        m_replies.insert( m_nam->get( req ) );
+    }
+}
+
+void Tracker::connectSignals()
 {
     connect( m_nam, SIGNAL( finished( QNetworkReply* ) ), this, SLOT( onFinished( QNetworkReply* ) ) );
 }
 
-void QtGoogleAnalyticsTracker::onFinished( QNetworkReply *reply )
+void Tracker::onFinished( QNetworkReply *reply )
 {
+    if ( ! m_replies.contains( reply ) )
+    {
+        return;
+    }
+
     if ( reply->error() != QNetworkReply::NoError )
     {
         qWarning( "Network reply finished with error: %s", qPrintable( reply->errorString() ) );
     }
     reply->deleteLater();
+    m_replies.remove( reply );
     emit tracked();
 }
 
-void QtGoogleAnalyticsTracker::setTrackingID( const QString& trackingID )
+void Tracker::setTrackingID( const QString& trackingID )
 {
     m_trackingID.clear();
     QRegExp validTrackingID( "\\b(UA|YT|MO)-\\d+-\\d+\\b" );
@@ -109,12 +154,12 @@ void QtGoogleAnalyticsTracker::setTrackingID( const QString& trackingID )
     }
 }
 
-QString QtGoogleAnalyticsTracker::trackingID() const
+QString Tracker::trackingID() const
 {
     return m_trackingID;
 }
 
-void QtGoogleAnalyticsTracker::setUserAgent( const QString& userAgent )
+void Tracker::setUserAgent( const QString& userAgent )
 {
     if ( ! userAgent.isEmpty() )
     {
@@ -122,12 +167,12 @@ void QtGoogleAnalyticsTracker::setUserAgent( const QString& userAgent )
     }
 }
 
-QString QtGoogleAnalyticsTracker::userAgent() const
+QString Tracker::userAgent() const
 {
     return m_userAgent;
 }
 
-void QtGoogleAnalyticsTracker::setEndpoint( const QUrl& endpoint )
+void Tracker::setEndpoint( const QUrl& endpoint )
 {
     if ( endpoint.isValid() )
     {
@@ -135,7 +180,49 @@ void QtGoogleAnalyticsTracker::setEndpoint( const QUrl& endpoint )
     }
 }
 
-QUrl QtGoogleAnalyticsTracker::endpoint() const
+QUrl Tracker::endpoint() const
 {
     return m_endpoint;
+}
+
+void Tracker::setClientID( const QString& clientID )
+{
+    // NOTE Google Analytics says that clientID SHOULD be a Uuidv4 but it accepts all texts
+    if ( ! clientID.isEmpty() )
+    {
+        m_clientID = clientID;
+    }
+}
+
+QString Tracker::clientID() const
+{
+    return m_clientID;
+}
+
+void Tracker::setOperation( QNetworkAccessManager::Operation op )
+{
+    switch( op )
+    {
+        case QNetworkAccessManager::PostOperation:
+        case QNetworkAccessManager::GetOperation:
+            m_operation = op;
+            break;
+        default:
+            return;
+    }
+}
+
+QNetworkAccessManager::Operation Tracker::operation() const
+{
+    return m_operation;
+}
+
+void Tracker::setCacheBusting( bool enabled )
+{
+    m_cacheBusting = enabled;
+}
+
+bool Tracker::cacheBusting() const
+{
+    return m_cacheBusting;
 }

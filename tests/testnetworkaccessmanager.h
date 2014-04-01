@@ -37,6 +37,7 @@ public:
 
     void setExpectedRequest( QNetworkRequest *request );
     void setExpectedData( const QString& data );
+    void setExpectedOperation( QNetworkAccessManager::Operation op );
 
     bool failed() const;
 
@@ -47,6 +48,7 @@ private:
     QNetworkRequest* m_expectedRequest;
     bool m_failed;
     QString m_expectedData;
+    QNetworkAccessManager::Operation m_expectedOp;
 
 };
 

@@ -25,28 +25,36 @@
 #include "QtGoogleAnalytics_global.h"
 
 #include <QList>
+#include <QNetworkAccessManager>
 #include <QObject>
+#include <QSet>
 #include <QString>
 #include <QUrl>
 
-class QNetworkAccessManager;
 class QNetworkReply;
 
-class QT_GA_EXPORTS QtGoogleAnalyticsTracker : public QObject
+namespace QtGoogleAnalytics
+{
+
+class QT_GA_EXPORTS Tracker : public QObject
 {
     Q_OBJECT
 public:
     typedef QList<QPair<QString, QString> > ParameterList;
+
     static const QUrl NormalEndpoint;
     static const QUrl SecureEndpoint;
     static const QString UserAgent;
+    static const QString DefaultClientID;
+    static const QString ProtocolVersion;
 
-    explicit QtGoogleAnalyticsTracker( QObject* parent=nullptr );
+    explicit Tracker( QObject* parent=nullptr );
 
     void setNetworkAccessManager( QNetworkAccessManager* nam );
     QNetworkAccessManager* networkAccessManager() const;
 
     void track( const QList<QPair<QString, QString> >& parameters );
+    void track( const QUrlQuery& data );
 
     void setTrackingID( const QString& trackingID );
     QString trackingID() const;
@@ -56,6 +64,15 @@ public:
 
     void setEndpoint( const QUrl& endpoint );
     QUrl endpoint() const;
+
+    void setClientID( const QString& clientID );
+    QString clientID() const;
+
+    void setOperation( QNetworkAccessManager::Operation op );
+    QNetworkAccessManager::Operation operation() const;
+
+    void setCacheBusting( bool enabled );
+    bool cacheBusting() const;
 
 signals:
     void tracked();
@@ -70,6 +87,12 @@ private:
     QString m_trackingID;
     QString m_userAgent;
     QUrl m_endpoint;
+    QString m_clientID;
+    QNetworkAccessManager::Operation m_operation;
+    bool m_cacheBusting;
+    QSet<QNetworkReply*> m_replies;
 };
+
+}
 
 #endif // QTGOOGLEANALYTICS_H
