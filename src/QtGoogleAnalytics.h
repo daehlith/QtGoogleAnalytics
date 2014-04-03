@@ -93,6 +93,8 @@ private:
     QSet<QNetworkReply*> m_replies;
 };
 
+QT_GA_EXPORTS bool isValidHit( const Tracker::ParameterList& parameters );
+
 }
 
 #endif // QTGOOGLEANALYTICS_H
