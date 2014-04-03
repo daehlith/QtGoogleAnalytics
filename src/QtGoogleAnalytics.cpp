@@ -21,9 +21,12 @@
 #include "QtGoogleAnalytics.h"
 
 #include <QtGlobal>
+#include <QHash>
+#include <QListIterator>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegExp>
+#include <QStringList>
 #include <QUrlQuery>
 
 using namespace QtGoogleAnalytics;
@@ -33,6 +36,94 @@ const QUrl Tracker::SecureEndpoint( "https://ssl.google-analytics.com/collect" )
 const QString Tracker::UserAgent( "QtGoogleAnalyticsTracker/1.0" );
 const QString Tracker::DefaultClientID( "QtGoogleAnalytics" );
 const QString Tracker::ProtocolVersion( "1" );
+
+namespace QtGoogleAnalytics
+{
+    typedef bool (*validationFunc)( const QString& value );
+
+    bool isBoolean( const QString& value )
+    {
+        return (value == "1" || value == "0");
+    }
+
+    bool isInteger( const QString& value )
+    {
+        return ( value == QString::number( value.toLongLong() ) );
+    }
+
+    bool isCurrency( const QString& value )
+    {
+        QRegExp currency( ".*-?\\d*\\.\\d{2,6}" );
+        return currency.exactMatch( value );
+    }
+
+    bool isValidHit( const Tracker::ParameterList& parameters )
+    {
+        QMap<QString, validationFunc> typeValidations;
+        typeValidations.insert( "aip", isBoolean );
+        typeValidations.insert( "je", isBoolean );
+        typeValidations.insert( "tr", isCurrency );
+        typeValidations.insert( "ts", isCurrency );
+        typeValidations.insert( "tt", isCurrency );
+        typeValidations.insert( "ip", isCurrency );
+        typeValidations.insert( "qt", isInteger );
+        typeValidations.insert( "ev", isInteger );
+        typeValidations.insert( "iq", isInteger );
+        typeValidations.insert( "utt", isInteger );
+        typeValidations.insert( "plt", isInteger );
+        typeValidations.insert( "dns", isInteger );
+        typeValidations.insert( "pdt", isInteger );
+        typeValidations.insert( "rrt", isInteger );
+        typeValidations.insert( "tcp", isInteger );
+        typeValidations.insert( "srt", isInteger );
+        // typeValidations.insert( "cm", intValidator ); needs something better because it can be up to 200...
+
+        QList<QString> validHitTypes;
+        validHitTypes << "pageview" << "appview" << "event" << "transaction";
+        validHitTypes << "item" << "social" << "exception" << "timing";
+
+        QMap<QString, QStringList> requiredPerHitType;
+        requiredPerHitType.insert( "transaction", QStringList() << "ti" );
+        requiredPerHitType.insert( "item", QStringList() << "ti" << "in" );
+        requiredPerHitType.insert( "social", QStringList() << "sn" << "sa" << "st" );
+
+        bool foundHitType = false;
+        bool hasAllRequiredParameters = true;
+        bool allParametersOfCorrectType = true;
+
+        QHash<QString, QString> params;
+        QListIterator<QPair<QString, QString>> iter( parameters );
+        while ( iter.hasNext() )
+        {
+            auto param = iter.next();
+            params.insert( param.first, param.second );
+
+            auto validationIter = typeValidations.find( param.first );
+            if ( validationIter != typeValidations.end() )
+            {
+                allParametersOfCorrectType = allParametersOfCorrectType && validationIter.value()( param.second );
+            }
+        }
+
+        auto hitIter = params.find( "t" );
+        if ( hitIter != params.end() && validHitTypes.contains( hitIter.value() ) )
+        {
+            foundHitType = true;
+            auto requiredIter = requiredPerHitType.find( hitIter.value() );
+            if ( requiredIter != requiredPerHitType.end() )
+            {
+                QListIterator<QString> iter( requiredIter.value() );
+                while ( iter.hasNext() )
+                {
+                    auto value = iter.next();
+                    hasAllRequiredParameters = hasAllRequiredParameters && params.keys().contains( value );
+                }
+            }
+        }
+
+        return foundHitType && hasAllRequiredParameters && allParametersOfCorrectType;
+    }
+}
 
 Tracker::Tracker( QObject *parent )
     : QObject( parent ), m_nam( new QNetworkAccessManager( this ) ), m_userAgent( UserAgent ),
@@ -74,6 +165,11 @@ QNetworkAccessManager* Tracker::networkAccessManager() const
 
 void Tracker::track( const Tracker::ParameterList& parameters )
 {
+    if ( ! isValidHit( parameters ) )
+    {
+        return;
+    }
+
     QUrlQuery query;
     query.setQueryItems( parameters );
     query.addQueryItem( QString( "v" ), ProtocolVersion );
